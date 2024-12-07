@@ -77,4 +77,4 @@ void DisplayState::deserialize(const std::vector<uint8_t>& byteArray) {
         }
     }
 }
-
+
