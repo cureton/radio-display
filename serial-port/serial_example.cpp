@@ -30,14 +30,21 @@ speed_t getBaudRate(int baud) {
     }
 }
 
-void sendData(int serialPort, const std::vector<uint8_t>& data, int interval) {
+void sendData(int serialPort, const std::vector<uint8_t>& data, int interval_ms) {
+    auto nextTimePoint = std::chrono::steady_clock::now();
+
     while (true) {
         ssize_t written = write(serialPort, data.data(), data.size());
         if (written == -1) {
             perror("Error writing to serial port");
             break;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+        // Schedule the next transmission
+        nextTimePoint += std::chrono::milliseconds(interval_ms);
+
+        // Wait until the next scheduled time
+        std::this_thread::sleep_until(nextTimePoint);
     }
 }
 
@@ -50,15 +57,15 @@ void readData(int serialPort) {
 
     while (true) {
         uint8_t byte;
-        ssize_t bytesRead = read(serialPort, &byte, 1);
+        size_t bytesRead = read(serialPort, &byte, 1);
 
         if (bytesRead <= 0) continue;
 
         if (byte == SYNC_BYTE) {
-            ssize_t bytesReadTotal = 0;
+            size_t bytesReadTotal = 0;
 
             while (bytesReadTotal < FRAME_SIZE) {
-                ssize_t result = read(serialPort, currFrame.data() + bytesReadTotal, FRAME_SIZE - bytesReadTotal);
+                size_t result = read(serialPort, currFrame.data() + bytesReadTotal, FRAME_SIZE - bytesReadTotal);
                 if (result <= 0) {
                     perror("Error reading frame");
                     break;
