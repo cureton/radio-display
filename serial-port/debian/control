@@ -1,0 +1,14 @@
+Source: serial-example
+Section: misc
+Priority: optional
+Maintainer: Your Name <your.email@example.com>
+Build-Depends: debhelper-compat (= 13), g++, libconfig++-dev
+Standards-Version: 4.6.0
+Homepage: https://example.com/serial-example
+
+Package: serial-example
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Serial port reader and writer
+ A multithreaded serial port communication program that sends and receives data over a serial port.
+ It supports configurable baud rates, frame synchronization, and change notifications.
