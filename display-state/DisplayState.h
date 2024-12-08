@@ -28,8 +28,8 @@ enum class DisplayBitMap : size_t {
     UNKNOWN_1_BIT7,
 
     OPERATING_FREQ_DIGIT_1_SEG_D =16,
-    ANNUNCIATOR_LOW_TX_POWER,
     ANNUNCIATOR_KEYPAD_LOCK_ACTIVE,
+    ANNUNCIATOR_LOW_TX_POWER,
     OPERATING_FREQ_DIGIT_2_SEG_E,
     OPERATING_FREQ_DIGIT_2_SEG_L,
     OPERATING_FREQ_DIGIT_2_SEG_G1,
@@ -117,7 +117,7 @@ enum class DisplayBitMap : size_t {
     UNKNOWN_11_BIT7,
 
     OPERATING_FREQ_DIGIT_5_SEG_D = 96,
-    ANNUNCIATOR_S_AND_PO_6,
+    ANNUNCIATOR_S_AND_PO_5,
     UNKNOWN_12_BIT2,
     OPERATING_FREQ_DIGIT_6_SEG_E,
     OPERATING_FREQ_DIGIT_6_SEG_L,
@@ -130,7 +130,7 @@ enum class DisplayBitMap : size_t {
     ANNUNCIATOR_CTCSS_OPERATION_DECODE,
     OPERATING_FREQ_DIGIT_6_SEG_K,
     OPERATING_FREQ_DIGIT_6_SEG_J,
-    UNKNOWN_13_BIT5,
+    OPERATING_FREQ_DIGIT_6_SEG_B,
     OPERATING_FREQ_DIGIT_6_SEG_G2,
     UNKNOWN_13_BIT7,
 
@@ -218,6 +218,8 @@ public:
     void printByteArray() const;
     std::vector<uint8_t> serialize() const;
     void deserialize(const std::vector<uint8_t>& byteArray);
+    void setBacklightLevel(uint8_t level);
+    void setPowerLevelIndicators(uint8_t level);
 
 
 private:

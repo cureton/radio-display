@@ -78,3 +78,81 @@ void DisplayState::deserialize(const std::vector<uint8_t>& byteArray) {
     }
 }
 
+void DisplayState::setBacklightLevel(uint8_t level) {
+
+    if (level & 0x01)
+	setBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_0);
+    else 
+        clearBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_0);
+
+    if (level & 0x02)
+	setBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_1);
+    else 
+        clearBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_1);
+
+    if (level & 0x04)
+	setBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_2);
+    else 
+        clearBit(DisplayBitMap::BACKLIGHT_LEVEL_BIT_2);
+
+}
+
+void DisplayState::setPowerLevelIndicators(uint8_t level) {
+
+    if (level >= 1 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_1);
+    } else {
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_1);
+    }
+
+    if (level >= 2 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_2);
+    } else {
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_2);
+    }
+
+    if (level >= 3 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_3);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_3);
+    }
+
+    if (level >= 4 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_4);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_4);
+    }
+
+    if (level >= 5 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_5);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_5);
+    }
+
+//    if (level >= 6 ) {
+//	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_6);
+//    } else { 
+//	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_6);
+//    } 
+
+    if (level >= 7 ) { 
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_7);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_7);
+    } 
+
+    if (level >= 8 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_8);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_8);
+    }
+
+    if (level >= 9 ) {
+	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_9);
+    } else { 
+	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_9);
+    }
+
+
+}
+

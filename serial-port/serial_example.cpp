@@ -8,6 +8,10 @@
 #include <libconfig.h++>
 #include <cstring>
 
+
+#include "../display-state/DisplayState.h"
+
+
 using FrameCallback = void (*)(int index, uint8_t value);
 FrameCallback frameCallback = nullptr;
 
@@ -18,7 +22,6 @@ struct SerialConfig {
     std::string parity;
     int stop_bits;
     int send_interval_ms;
-    std::vector<uint8_t> data_bytes;
 };
 
 speed_t getBaudRate(int baud) {
@@ -30,10 +33,13 @@ speed_t getBaudRate(int baud) {
     }
 }
 
-void sendData(int serialPort, const std::vector<uint8_t>& data, int interval_ms) {
+//void sendData(int serialPort, const std::vector<uint8_t>& data, int interval_ms) {
+void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
     auto nextTimePoint = std::chrono::steady_clock::now();
+    std::vector<uint8_t> data;
 
     while (true) {
+        data = displaystate.serialize();
         ssize_t written = write(serialPort, data.data(), data.size());
         if (written == -1) {
             perror("Error writing to serial port");
@@ -55,13 +61,12 @@ void readData(int serialPort) {
     std::vector<uint8_t> currFrame(FRAME_SIZE, 0x00);
 
     while (true) {
-        uint8_t byte;
-        size_t bytesRead = read(serialPort, &byte, 1);
+        size_t bytesRead = read(serialPort, currFrame.data(), 1);
 
         if (bytesRead <= 0) continue;
 
-        if (byte == SYNC_BYTE) {
-            size_t bytesReadTotal = 0;
+        if (currFrame[0] == SYNC_BYTE) {
+            size_t bytesReadTotal = 1;
 
             while (bytesReadTotal < FRAME_SIZE) {
                 size_t result = read(serialPort, currFrame.data() + bytesReadTotal, FRAME_SIZE - bytesReadTotal);
@@ -72,13 +77,13 @@ void readData(int serialPort) {
                 bytesReadTotal += result;
             }
 
-            // Print the frame in hexadecimal format
-            std::cout << "Received Frame: ";
-            for (size_t i = 0; i < FRAME_SIZE; ++i) {
-                printf("%02X ", currFrame[i]);
-            }
-            std::cout << std::endl;
-
+//            // Print the frame in hexadecimal format
+//            std::cout << "Received Frame: ";
+//            for (size_t i = 0; i < FRAME_SIZE; ++i) {
+//                printf("%02X ", currFrame[i]);
+//            }
+//            std::cout << std::endl;
+//
             // Compare frames and invoke callback if registered
             for (size_t i = 0; i < FRAME_SIZE; ++i) {
                 if (currFrame[i] != prevFrame[i] && frameCallback) {
@@ -109,17 +114,55 @@ SerialConfig loadConfig(const std::string& configFile) {
     serial.lookupValue("stop_bits", config.stop_bits);
     serial.lookupValue("send_interval_ms", config.send_interval_ms);
 
-    const libconfig::Setting& data = root["data"]["bytes"];
-    for (int i = 0; i < data.getLength(); ++i) {
-        config.data_bytes.push_back(static_cast<uint8_t>(data[i].operator int()));
-    }
-
     return config;
+}
+
+void updateDisplay(DisplayState& displaystate) {
+    auto nextTimePoint = std::chrono::steady_clock::now();
+    bool toggle; 
+
+    toggle = false; 
+
+    while (true) {
+	    for (uint8_t i = static_cast<uint8_t>(DisplayBitMap::ANNUNCIATOR_9600BPS); i < static_cast<uint8_t>(DisplayBitMap::UNKNOWN_41_BIT7); ++i) {
+
+            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << '\n';
+		    DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
+
+		    for (uint8_t repeat=0; repeat < 4; repeat++) {
+
+			    if (toggle)  {
+				    toggle=false;
+				    displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+			    } else {
+				    toggle=true;
+				    displaystate.clearBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+			    }
+
+			    if (repeat & 0x01)
+				    displaystate.clearBit(bitindex);
+			    else
+				    displaystate.setBit(bitindex);
+
+                            //always set 
+			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
+
+			    displaystate.commit();
+
+			    // Schedule the next transmission
+			    nextTimePoint += std::chrono::milliseconds(500);
+
+			    // Wait until the next scheduled time
+			    std::this_thread::sleep_until(nextTimePoint);
+		    }
+	    } 
+    }
 }
 
 int main(int argc, char* argv[]) {
     std::string configFile = argc > 1 ? argv[1] : "config.cfg";
 
+    DisplayState displaystate;
     try {
         SerialConfig cfg = loadConfig(configFile);
 
@@ -163,11 +206,31 @@ int main(int argc, char* argv[]) {
                       << ": new value = 0x" << std::hex << +value << std::dec << '\n';
         });
 
-        std::thread sender(sendData, serialPort, cfg.data_bytes, cfg.send_interval_ms);
+//        // Set some bits using the enum
+//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_9600BPS);
+//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_LOW_TX_POWER);
+//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_KEYPAD_LOCK_ACTIVE);
+//        //displaystate.setBit(DisplayBitMap::UNKNOWN_36_BIT4);
+//        displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
+//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+//
+
+	displaystate.setBacklightLevel(5);
+
+        // Commit changes to the current buffer
+        displaystate.commit();
+
+        // Print the byte array
+        displaystate.printByteArray();
+
+        std::thread sender(sendData, serialPort, std::ref(displaystate), cfg.send_interval_ms);
         std::thread reader(readData, serialPort);
+        std::thread update(updateDisplay, std::ref(displaystate));
+
 
         sender.join();
         reader.join();
+        update.join();
 
         close(serialPort);
     } catch (const libconfig::FileIOException& ex) {
