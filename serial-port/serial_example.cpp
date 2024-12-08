@@ -47,7 +47,6 @@ void sendData(int serialPort, const std::vector<uint8_t>& data, int interval_ms)
         std::this_thread::sleep_until(nextTimePoint);
     }
 }
-
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
     constexpr size_t FRAME_SIZE = 13;
@@ -73,6 +72,14 @@ void readData(int serialPort) {
                 bytesReadTotal += result;
             }
 
+            // Print the frame in hexadecimal format
+            std::cout << "Received Frame: ";
+            for (size_t i = 0; i < FRAME_SIZE; ++i) {
+                printf("%02X ", currFrame[i]);
+            }
+            std::cout << std::endl;
+
+            // Compare frames and invoke callback if registered
             for (size_t i = 0; i < FRAME_SIZE; ++i) {
                 if (currFrame[i] != prevFrame[i] && frameCallback) {
                     frameCallback(i, currFrame[i]);
@@ -83,7 +90,6 @@ void readData(int serialPort) {
         }
     }
 }
-
 void registerFrameCallback(FrameCallback callback) {
     frameCallback = callback;
 }
