@@ -1,9 +1,9 @@
 #include <cstdint>
-#include <unordered_map>
+#include <map>
 #include <string>
 
 // 14-segment font map with updated segment configuration
-constexpr std::unordered_map<char, uint16_t> FONT_MAP = {
+std::map<char, uint16_t> FONT_MAP = {
     // Digits
     {'0', 0b1110110001110111},  // 0
     {'1', 0b0000010010000010},  // 1

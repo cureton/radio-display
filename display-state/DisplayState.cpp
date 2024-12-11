@@ -1,8 +1,12 @@
+
 #include <vector> 
 #include <iostream> 
 #include <iomanip> 
 
 #include "DisplayState.h"
+
+#include "FontMap.h"
+
 
 // Constructor: Initialize the default state
 DisplayState::DisplayState() {
@@ -78,6 +82,9 @@ void DisplayState::deserialize(const std::vector<uint8_t>& byteArray) {
     }
 }
 
+
+
+
 void DisplayState::setBacklightLevel(uint8_t level) {
 
     if (level & 0x01)
@@ -97,62 +104,47 @@ void DisplayState::setBacklightLevel(uint8_t level) {
 
 }
 
-void DisplayState::setPowerLevelIndicators(uint8_t level) {
+void DisplayState::setFrequencyDisplaySegment(uint8_t segment, char character) {
 
-    if (level >= 1 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_1);
-    } else {
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_1);
+    constexpr uint8_t maxSegment = sizeof(OPERATING_FREQUENCY_DIGITS) / sizeof(OPERATING_FREQUENCY_DIGITS[0]);
+    constexpr uint8_t maxSegmentElements = sizeof(OPERATING_FREQUENCY_DIGITS[0]) / sizeof(OPERATING_FREQUENCY_DIGITS[0][0]);
+
+    if (segment >= maxSegment) { 
+        std::cerr << "Segment index out of range" << std::endl;
+	return; 
     }
 
-    if (level >= 2 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_2);
-    } else {
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_2);
+    // Retrieve the 14-segment bit pattern for the character
+    auto it = FONT_MAP.find(character);
+    if (it == FONT_MAP.end()) {
+        std::cerr << "Character not found in font map" << std::endl;
+        return;
     }
 
-    if (level >= 3 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_3);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_3);
+    uint16_t fontBits = it->second;
+
+    // Iterate over each bit position
+    for (int i = 0; i < maxSegmentElements; ++i) {
+        if (fontBits & (1 << i)) {
+             DisplayState::setBit(OPERATING_FREQUENCY_DIGITS[segment][i]);
+        } else {
+             DisplayState::clearBit(OPERATING_FREQUENCY_DIGITS[segment][i]);
+        }
     }
-
-    if (level >= 4 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_4);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_4);
-    }
-
-    if (level >= 5 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_5);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_5);
-    }
-
-//    if (level >= 6 ) {
-//	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_6);
-//    } else { 
-//	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_6);
-//    } 
-
-    if (level >= 7 ) { 
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_7);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_7);
-    } 
-
-    if (level >= 8 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_8);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_8);
-    }
-
-    if (level >= 9 ) {
-	setBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_9);
-    } else { 
-	clearBit(DisplayBitMap::ANNUNCIATOR_S_AND_PO_9);
-    }
-
-
 }
 
+void DisplayState::setPowerLevelIndicators(uint8_t level) {
+    constexpr uint8_t maxLevel = sizeof(S_AND_PO_LEVEL) / sizeof(S_AND_PO_LEVEL[0]);
+
+    // Limit level to the maximum allowed by the array
+    level = (level > maxLevel) ? maxLevel : level;
+
+    // Cylce throught Signal and Power Output Inticators and set them accorging to level 
+    for (uint8_t i = 0; i < maxLevel; ++i) {
+        if (i < level) {
+             DisplayState::setBit(S_AND_PO_LEVEL[i]);
+        } else {
+             DisplayState::clearBit(S_AND_PO_LEVEL[i]);
+        }
+    }
+}

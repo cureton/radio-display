@@ -146,6 +146,15 @@ void updateDisplay(DisplayState& displaystate) {
 
                             //always set 
 			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
+			 
+			    char TEXT[]="HELLO THERE" ;
+                            uint8_t count=0; 
+ 		            for (uint8_t i =0; i< 6; i++){
+                                displaystate.setFrequencyDisplaySegment(i, TEXT[(count+i)%11]);
+                            }
+                            
+				
+			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
 
 			    displaystate.commit();
 

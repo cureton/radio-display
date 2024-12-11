@@ -16,5 +16,24 @@ int main() {
     // Print the byte array
     displaystate.printByteArray();
 
+    displaystate.setPowerLevelIndicators(2);
+    displaystate.commit();
+    displaystate.printByteArray();
+
+    displaystate.setPowerLevelIndicators(10);
+    displaystate.commit();
+    displaystate.printByteArray();
+
+
+    displaystate.setFrequencyDisplaySegment(0,'1');
+    displaystate.setFrequencyDisplaySegment(1,'A');
+    displaystate.setFrequencyDisplaySegment(2,'2');
+    displaystate.setFrequencyDisplaySegment(3,'B');
+    displaystate.setFrequencyDisplaySegment(4,'Z');
+    displaystate.setFrequencyDisplaySegment(5,'0');
+
+    displaystate.commit();
+    displaystate.printByteArray();
+
     return 0;
 }
