@@ -147,12 +147,12 @@ void updateDisplay(DisplayState& displaystate) {
                             //always set 
 			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
 			 
-			    char TEXT[]="HELLO THERE" ;
-                            uint8_t count=0; 
- 		            for (uint8_t i =0; i< 6; i++){
-                                displaystate.setFrequencyDisplaySegment(i, TEXT[(count+i)%11]);
-                            }
-                            
+//			    char TEXT[]="HELLO THERE" ;
+//                            uint8_t count=0; 
+// 		            for (uint8_t i =0; i< 6; i++){
+//                                displaystate.setFrequencyDisplaySegment(i, TEXT[(count+i)%11]);
+//                            }
+//                            
 				
 			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
 
@@ -180,29 +180,35 @@ int main(int argc, char* argv[]) {
             perror("Error opening serial port");
             return 1;
         }
-
-        termios tty{};
+//
+        struct termios tty{};
         if (tcgetattr(serialPort, &tty) != 0) {
             perror("Error getting terminal attributes");
             close(serialPort);
             return 1;
         }
 
-        cfsetospeed(&tty, getBaudRate(cfg.baud_rate));
-        cfsetispeed(&tty, getBaudRate(cfg.baud_rate));
+          cfsetospeed(&tty, B19200);
+          cfsetispeed(&tty, B19200); 
 
-        tty.c_cflag = CLOCAL | CREAD | (cfg.data_bits == 8 ? CS8 : CS7);
+         // Control flags
+         tty.c_cflag &= ~CSIZE;
+         tty.c_cflag |= CS8;                // 8-bit chars
+         tty.c_cflag |= (CLOCAL | CREAD) ;  // Local connections, enable RX
+         tty.c_cflag &= ~(PARENB | PARODD); // no parity
+         tty.c_cflag &= ~CSTOPB;            // 1 stop bit
+         tty.c_cflag &= ~CRTSCTS;            // No hardare flow control 
 
-        if (cfg.parity == "even") tty.c_cflag |= PARENB;
-        else if (cfg.parity == "odd") tty.c_cflag |= (PARENB | PARODD);
-        else tty.c_cflag &= ~PARENB;
+         // Input flags
+         tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK |
+                     ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 
-        if (cfg.stop_bits == 2) tty.c_cflag |= CSTOPB;
-        else tty.c_cflag &= ~CSTOPB;
+         // Output flags
+         tty.c_oflag &= ~OPOST;              // raw output
 
-        tty.c_iflag = IGNPAR;
-        tty.c_oflag = 0;
-        tty.c_lflag = 0;
+         // Local flags
+         tty.c_lflag &= ~(ICANON| ECHO | ECHOE| ISIG);
+
 
         if (tcsetattr(serialPort, TCSANOW, &tty) != 0) {
             perror("Error setting terminal attributes");
@@ -215,14 +221,14 @@ int main(int argc, char* argv[]) {
                       << ": new value = 0x" << std::hex << +value << std::dec << '\n';
         });
 
-//        // Set some bits using the enum
-//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_9600BPS);
-//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_LOW_TX_POWER);
-//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_KEYPAD_LOCK_ACTIVE);
-//        //displaystate.setBit(DisplayBitMap::UNKNOWN_36_BIT4);
-//        displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
-//        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
-//
+        // Set some bits using the enum
+        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_9600BPS);
+        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_LOW_TX_POWER);
+        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_KEYPAD_LOCK_ACTIVE);
+        //displaystate.setBit(DisplayBitMap::UNKNOWN_36_BIT4);
+        displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
+        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+
 
 	displaystate.setBacklightLevel(5);
 
