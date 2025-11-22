@@ -17,7 +17,7 @@ $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # Compile source files into object files
-%.o: %.cpp DisplayState.h
+%.o: %.cpp DisplayState.h FontMap.h
 	$(CXX) $(CXXFLAGS) -c $<
 
 # Clean up build files

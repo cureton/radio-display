@@ -10,7 +10,13 @@
 
 // Constructor: Initialize the default state
 DisplayState::DisplayState() {
-    buffer_next[static_cast<size_t>(DisplayBitMap::UNKNOWN_0_BIT7)] = true;
+    buffer_next[static_cast<size_t>(DisplayBitMap::START_OF_FRAME_0_BIT7)] = true;
+}
+
+
+void DisplayState::clear() {
+    buffer_next.clear();
+    buffer_next[static_cast<size_t>(DisplayBitMap::START_OF_FRAME_0_BIT7)] = true;
 }
 
 // Set a specific bit
@@ -25,6 +31,8 @@ void DisplayState::clearBit(DisplayBitMap bit) {
 
 // Commit changes from next buffer to current buffer
 void DisplayState::commit() {
+    /* Ensure top bit of byte one is set - Start-of-fram */
+    buffer_next[static_cast<size_t>(DisplayBitMap::START_OF_FRAME_0_BIT7)] = true;
     buffer_current = buffer_next;
 }
 
@@ -115,8 +123,8 @@ void DisplayState::setFrequencyDisplaySegment(uint8_t segment, char character) {
     }
 
     // Retrieve the 14-segment bit pattern for the character
-    auto it = FONT_MAP.find(character);
-    if (it == FONT_MAP.end()) {
+    auto it = FOURTEEN_SEGMENT_FONT_MAP.find(character);
+    if (it == FOURTEEN_SEGMENT_FONT_MAP.end()) {
         std::cerr << "Character not found in font map" << std::endl;
         return;
     }
@@ -132,6 +140,36 @@ void DisplayState::setFrequencyDisplaySegment(uint8_t segment, char character) {
         }
     }
 }
+
+void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char character) {
+
+    constexpr uint8_t maxSegment = sizeof(MEMORY_CHANNEL_DIGITS) / sizeof(MEMORY_CHANNEL_DIGITS[0]);
+    constexpr uint8_t maxSegmentElements = sizeof(MEMORY_CHANNEL_DIGITS[0]) / sizeof(MEMORY_CHANNEL_DIGITS[0][0]);
+
+    if (segment >= maxSegment) { 
+        std::cerr << "Segment index out of range" << std::endl;
+	return; 
+    }
+
+    // Retrieve the 14-segment bit pattern for the character
+    auto it = FOURTEEN_SEGMENT_FONT_MAP.find(character);
+    if (it == FOURTEEN_SEGMENT_FONT_MAP.end()) {
+        std::cerr << "Character not found in font map" << std::endl;
+        return;
+    }
+
+    uint16_t fontBits = it->second;
+
+    // Iterate over each bit position
+    for (int i = 0; i < maxSegmentElements; ++i) {
+        if (fontBits & (1 << i)) {
+             DisplayState::setBit(MEMORY_CHANNEL_DIGITS[segment][i]);
+        } else {
+             DisplayState::clearBit(MEMORY_CHANNEL_DIGITS[segment][i]);
+        }
+    }
+}
+
 
 void DisplayState::setPowerLevelIndicators(uint8_t level) {
     constexpr uint8_t maxLevel = sizeof(S_AND_PO_LEVEL) / sizeof(S_AND_PO_LEVEL[0]);
