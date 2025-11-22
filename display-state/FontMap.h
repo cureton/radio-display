@@ -45,7 +45,7 @@ std::map<char, uint16_t> FONT_MAP = {
     {'Z', 0b1100110010011101},  // Z
 
     // Special Characters
-    {'-', 0b0000000000011000},  // Dash
+    {'-', 0b0000000011000000},  // Dash
     {' ', 0b0000000000000000},  // Space
 };
 
