@@ -158,27 +158,27 @@ enum class DisplayBitMap : size_t {
     UNKNOWN_36_BIT1,
     UNKNOWN_36_BIT2,
     UNKNOWN_36_BIT3,
-    UNKNOWN_36_BIT4,
-    MEMORY_CHANNEL_DIGIT_1_SEG_B,
+//    UNKNOWN_36_BIT4,
+    MEMORY_CHANNEL_DIGIT_1_SEG_B, //THIS IS WRONG
     MEMORY_CHANNEL_DIGIT_1_SEG_C,
-///    MEMORY_CHANNEL_DIGIT_1_SEG_A, //THIS IS WRONG
-    UNKNOWN_16_BIT7,
+    MEMORY_CHANNEL_DIGIT_1_SEG_A,
+    UNKNOWN_36_BIT7,
 
     MEMORY_CHANNEL_DIGIT_1_SEG_G = 296,
-    MEMORY_CHANNEL_DIGIT_1_SEG_D,
+    MEMORY_CHANNEL_DIGIT_1_SEG_F,
     MEMORY_CHANNEL_DIGIT_1_SEG_E,
     ANNUNCIATOR_PRIORITORY_CHANNEL,
-    MEMORY_CHANNEL_DIGIT_1_SEG_F,
+    MEMORY_CHANNEL_DIGIT_1_SEG_D,
     MEMORY_CHANNEL_DIGIT_2_SEG_B,
     MEMORY_CHANNEL_DIGIT_2_SEG_C,
     UNKNOWN_37_BIT7,
 
     MEMORY_CHANNEL_DIGIT_2_SEG_A = 304,
     MEMORY_CHANNEL_DIGIT_2_SEG_G,
-    MEMORY_CHANNEL_DIGIT_2_SEG_D,
+    MEMORY_CHANNEL_DIGIT_2_SEG_F,
     MEMORY_CHANNEL_DIGIT_2_SEG_E,
     UNKNOWN_38_BIT4,
-    MEMORY_CHANNEL_DIGIT_2_SEG_F,
+    MEMORY_CHANNEL_DIGIT_2_SEG_D,
     UNKNOWN_38_BIT6,
     UNKNOWN_38_BIT7,
 
@@ -191,10 +191,10 @@ enum class DisplayBitMap : size_t {
     MEMORY_CHANNEL_DIGIT_3_SEG_G,
     UNKNOWN_39_BIT7,
 
-    MEMORY_CHANNEL_DIGIT_3_SEG_D = 320,
+    MEMORY_CHANNEL_DIGIT_3_SEG_F = 320,
     MEMORY_CHANNEL_DIGIT_3_SEG_E,
     ANNUNCIATOR_MEMORY_TUNE_MODE,
-    MEMORY_CHANNEL_DIGIT_3_SEG_F,
+    MEMORY_CHANNEL_DIGIT_3_SEG_D,
     MEMORY_CHANNEL_SEPARATOR,
     ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE,
     ANNUNCIATOR_AMP_MODE_SELECTED,
@@ -349,7 +349,7 @@ constexpr DisplayBitMap S_AND_PO_LEVEL[] = {
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_3,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_4,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_5,
-//    DisplayBitMap::ANNUNCIATOR_S_AND_PO_6,
+//    DisplayBitMap::ANNUNCIATOR_S_AND_PO_6, // Don;t know which bit position this is
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_7,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_8,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_9,
@@ -472,14 +472,52 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
     }
 };
 
+constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][15] = {
+    // Digit 1
+    {
+        //DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_A,
+	DisplayBitMap::UNUSED,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_C,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_E,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_G,
+    },
+
+    // Digit 2
+    {
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_A,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_C,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_E,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_G,
+    },
+
+    // Digit 3
+    {
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_A,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_C,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_E,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_G,
+	DisplayBitMap::UNUSED
+
+    },
+};
 
 class DisplayState {
 public:
     DisplayState();  // Constructor
 
     // Public methods
-    void setBit(DisplayBitMap bit);
+    void clear();
     void clearBit(DisplayBitMap bit);
+    void setBit(DisplayBitMap bit);
     void commit();
     void printByteArray() const;
     std::vector<uint8_t> serialize() const;
@@ -487,7 +525,7 @@ public:
     void setBacklightLevel(uint8_t level);
     void setPowerLevelIndicators(uint8_t level);
     void setFrequencyDisplaySegment(uint8_t segmentIndex, char character);
-
+    void setMemoryChannelDisplaySegment(uint8_t segmentIndex , char character);
 
 private:
     // Data members
