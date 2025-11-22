@@ -61,11 +61,13 @@ void readData(int serialPort) {
     std::vector<uint8_t> currFrame(FRAME_SIZE, 0x00);
 
     while (true) {
+	/* Read single bytes until we get sync with SOF byte */ 
         size_t bytesRead = read(serialPort, currFrame.data(), 1);
 
         if (bytesRead <= 0) continue;
 
         if (currFrame[0] == SYNC_BYTE) {
+            /* First byte is start of frame in start of current frame */
             size_t bytesReadTotal = 1;
 
             while (bytesReadTotal < FRAME_SIZE) {
@@ -119,52 +121,73 @@ SerialConfig loadConfig(const std::string& configFile) {
 
 void updateDisplay(DisplayState& displaystate) {
     auto nextTimePoint = std::chrono::steady_clock::now();
-    bool toggle; 
 
-    toggle = false; 
+
+    displaystate.clear();
+
+    /* Turn em on */
+    for (unsigned int i =0; i < ALL_DISPLAY_ELEMENTS_MAX; i++)
+    {
+        displaystate.setBit(ALL_DISPLAY_ELEMENTS[i]);
+    }
+
+   // Commit changes to the current buffer
+
+   displaystate.setBacklightLevel(5);
+   displaystate.commit();
+
 
     while (true) {
-	    for (uint8_t i = static_cast<uint8_t>(DisplayBitMap::ANNUNCIATOR_9600BPS); i < static_cast<uint8_t>(DisplayBitMap::UNKNOWN_41_BIT7); ++i) {
+	    for (uint32_t i = 0; i < (uint32_t) static_cast<uint32_t>(DisplayBitMap::UNUSED); i++) {
 
-            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << '\n';
-		    DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
+            /* Skip high bit of serial bite */	
+	    if (( i % 8) ==7 ) i++; 
 
-		    for (uint8_t repeat=0; repeat < 4; repeat++) {
 
-			    if (toggle)  {
-				    toggle=false;
+            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << " count " << (uint32_t) i % ALL_DISPLAY_ELEMENTS_MAX <<  " of "  <<  ALL_DISPLAY_ELEMENTS_MAX << '\n';
+	    DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
+
+
+//	    displaystate.setUnknownBit(i % 19) ;
+//        displaystate.setPowerLevelIndicators(i %10);
+
+//	displaystate.setBacklightLevel(i %8);
+                            displaystate.setFrequencyDisplaySegment(0, (i/100) % 10   + '0');
+                            displaystate.setFrequencyDisplaySegment(1, (i/10)  % 10   + '0');
+                            displaystate.setFrequencyDisplaySegment(2, i       % 10   + '0');
+//                          displaystate.setFrequencyDisplaySegment(0, ascii_num );
+//                          displaystate.setMemoryChannelDisplaySegment(0, ascii_num );
+//                          displaystate.setMemoryChannelDisplaySegment(1, ascii_num );
+//                          displaystate.setMemoryChannelDisplaySegment(2, ascii_num );
+
+		    /* Two flashed per element (5 toggles) */
+		    for (uint8_t repeat=0; repeat < 6; repeat++) {
+
+			    if (repeat % 2)  {
 				    displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+	    			    displaystate.setBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
 			    } else {
-				    toggle=true;
 				    displaystate.clearBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
-			    }
+	    			    displaystate.clearBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
+ 			    }
 
-			    if (repeat & 0x01)
-				    displaystate.clearBit(bitindex);
-			    else
-				    displaystate.setBit(bitindex);
-
-                            //always set 
-			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
-			 
-//			    char TEXT[]="HELLO THERE" ;
-//                            uint8_t count=0; 
-// 		            for (uint8_t i =0; i< 6; i++){
-//                                displaystate.setFrequencyDisplaySegment(i, TEXT[(count+i)%11]);
-//                            }
-//                            
-				
-			    displaystate.setBit(DisplayBitMap::UNKNOWN_0_BIT7);
-
+//			    if (repeat & 0x01)
+//				    displaystate.clearBit(bitindex);
+//			    else
+//				    displaystate.setBit(bitindex);
+//
 			    displaystate.commit();
 
 			    // Schedule the next transmission
-			    nextTimePoint += std::chrono::milliseconds(500);
+			    nextTimePoint += std::chrono::milliseconds(100);
 
 			    // Wait until the next scheduled time
 			    std::this_thread::sleep_until(nextTimePoint);
 		    }
+	
 	    } 
+
+	displaystate.clear();
     }
 }
 
@@ -220,23 +243,6 @@ int main(int argc, char* argv[]) {
             std::cout << "Byte changed at index " << index 
                       << ": new value = 0x" << std::hex << +value << std::dec << '\n';
         });
-
-        // Set some bits using the enum
-        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_9600BPS);
-        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_LOW_TX_POWER);
-        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_KEYPAD_LOCK_ACTIVE);
-        //displaystate.setBit(DisplayBitMap::UNKNOWN_36_BIT4);
-        displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
-        displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
-
-
-	displaystate.setBacklightLevel(5);
-
-        // Commit changes to the current buffer
-        displaystate.commit();
-
-        // Print the byte array
-        displaystate.printByteArray();
 
         std::thread sender(sendData, serialPort, std::ref(displaystate), cfg.send_interval_ms);
         std::thread reader(readData, serialPort);

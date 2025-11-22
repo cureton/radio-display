@@ -6,7 +6,7 @@ int main() {
     // Set some bits using the enum
     displaystate.setBit(DisplayBitMap::ANNUNCIATOR_9600BPS);
     displaystate.setBit(DisplayBitMap::ANNUNCIATOR_LOW_TX_POWER);
-    displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
+//    displaystate.setBit(DisplayBitMap::MEMORY_CHANNEL_SEPARATOR);
     displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
 
     // Commit changes to the current buffer

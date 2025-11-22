@@ -141,6 +141,33 @@ void DisplayState::setFrequencyDisplaySegment(uint8_t segment, char character) {
     }
 }
 
+void DisplayState::setUnknownBit(uint8_t index) {
+
+    constexpr uint8_t maxElements = sizeof(UNKNOWN_BITS) / sizeof(UNKNOWN_BITS[0]);
+
+    std::cout << "bit intex " << (uint32_t)UNKNOWN_BITS[index] << " ";
+    if (index < maxElements) { 
+        DisplayState::setBit(UNKNOWN_BITS[index]);
+         index ++;
+    } else {
+        std::cerr << "Unknown bit index out of range" << std::endl;
+    }
+    return; 
+}
+
+void DisplayState::clearUnknownBit(uint8_t index) {
+
+    constexpr uint8_t maxElements = sizeof(UNKNOWN_BITS) / sizeof(UNKNOWN_BITS[0]);
+
+    if (index < maxElements) { 
+        DisplayState::clearBit(UNKNOWN_BITS[index]);
+         index ++;
+    } else {
+        std::cerr << "Unknown bit index out of range" << std::endl;
+    }
+    return; 
+}
+
 void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char character) {
 
     constexpr uint8_t maxSegment = sizeof(MEMORY_CHANNEL_DIGITS) / sizeof(MEMORY_CHANNEL_DIGITS[0]);
@@ -171,8 +198,9 @@ void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char characte
 }
 
 
+
 void DisplayState::setPowerLevelIndicators(uint8_t level) {
-    constexpr uint8_t maxLevel = sizeof(S_AND_PO_LEVEL) / sizeof(S_AND_PO_LEVEL[0]);
+    constexpr uint8_t maxLevel = S_AND_PO_LEVEL_MAX;
 
     // Limit level to the maximum allowed by the array
     level = (level > maxLevel) ? maxLevel : level;
@@ -183,6 +211,23 @@ void DisplayState::setPowerLevelIndicators(uint8_t level) {
              DisplayState::setBit(S_AND_PO_LEVEL[i]);
         } else {
              DisplayState::clearBit(S_AND_PO_LEVEL[i]);
+        }
+    }
+}
+
+
+void DisplayState::setAnnunciators(uint8_t level) {
+    constexpr uint8_t maxElement = ANNUNCIATOR_BITS_MAX;
+
+    // Limit level to the maximum allowed by the array
+    level = (level > maxElement) ? maxElement : level;
+
+    // Cylce throught Signal and Power Output Inticators and set them accorging to level 
+    for (uint8_t i = 0; i < maxElement; ++i) {
+        if (i < level) {
+             DisplayState::setBit(ANNUNCIATOR_BITS[i]);
+        } else {
+             DisplayState::clearBit(ANNUNCIATOR_BITS[i]);
         }
     }
 }
