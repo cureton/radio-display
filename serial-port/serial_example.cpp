@@ -133,62 +133,60 @@ void updateDisplay(DisplayState& displaystate) {
 
    // Commit changes to the current buffer
 
-   displaystate.setBacklightLevel(5);
-   displaystate.commit();
+    displaystate.setBacklightLevel(5);
+    displaystate.commit();
 
 
-    while (true) {
-	    for (uint32_t i = 0; i < (uint32_t) static_cast<uint32_t>(DisplayBitMap::UNUSED); i++) {
-
-            /* Skip high bit of serial bite */	
-	    if (( i % 8) ==7 ) i++; 
-
-
-            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << " count " << (uint32_t) i % ALL_DISPLAY_ELEMENTS_MAX <<  " of "  <<  ALL_DISPLAY_ELEMENTS_MAX << '\n';
-	    DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
-
-
-//	    displaystate.setUnknownBit(i % 19) ;
-//        displaystate.setPowerLevelIndicators(i %10);
-
-//	displaystate.setBacklightLevel(i %8);
-                            displaystate.setFrequencyDisplaySegment(0, (i/100) % 10   + '0');
-                            displaystate.setFrequencyDisplaySegment(1, (i/10)  % 10   + '0');
-                            displaystate.setFrequencyDisplaySegment(2, i       % 10   + '0');
-//                          displaystate.setFrequencyDisplaySegment(0, ascii_num );
-//                          displaystate.setMemoryChannelDisplaySegment(0, ascii_num );
-//                          displaystate.setMemoryChannelDisplaySegment(1, ascii_num );
-//                          displaystate.setMemoryChannelDisplaySegment(2, ascii_num );
-
-		    /* Two flashed per element (5 toggles) */
-		    for (uint8_t repeat=0; repeat < 6; repeat++) {
-
-			    if (repeat % 2)  {
-				    displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
-	    			    displaystate.setBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
-			    } else {
-				    displaystate.clearBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
-	    			    displaystate.clearBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
- 			    }
-
-//			    if (repeat & 0x01)
-//				    displaystate.clearBit(bitindex);
-//			    else
-//				    displaystate.setBit(bitindex);
-//
-			    displaystate.commit();
-
-			    // Schedule the next transmission
-			    nextTimePoint += std::chrono::milliseconds(100);
-
-			    // Wait until the next scheduled time
-			    std::this_thread::sleep_until(nextTimePoint);
-		    }
+    while (true) 
+    {
+        displaystate.clear();
+        displaystate.setBacklightLevel(5);
 	
-	    } 
+	/* Turn em all on */
+        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) 
+        {
+            displaystate.setBit(ALL_DISPLAY_ELEMENTS[i]);
+        }
 
-	displaystate.clear();
-    }
+        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) 
+        {
+            /* Skip high bit of serial bite */	
+            if (( i % 8) ==7 ) i++; 
+    
+            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << " count " << (uint32_t) i % ALL_DISPLAY_ELEMENTS_MAX <<  " of "  <<  ALL_DISPLAY_ELEMENTS_MAX << '\n';
+            DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
+    
+            displaystate.setBacklightLevel(5);
+            displaystate.setFrequencyDisplaySegment(0, (i/100) % 10   + '0');
+            displaystate.setFrequencyDisplaySegment(1, (i/10)  % 10   + '0');
+            displaystate.setFrequencyDisplaySegment(2, i       % 10   + '0');
+    
+	    //displaystate.setMemoryChannelDisplaySegment(0, (i/100) % 10   + '0');
+            //displaystate.setMemoryChannelDisplaySegment(1, (i/10)  % 10   + '0');
+            //displaystate.setMemoryChannelDisplaySegment(2, i       % 10   + '0');
+    
+
+            /* Two flashed per element (5 toggles) */
+            for (uint8_t repeat=0; repeat < 6; repeat++) {
+    
+                if (repeat % 2)  {
+                    displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+                    displaystate.setBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
+                }  else {
+                    displaystate.clearBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
+                    displaystate.clearBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
+                }
+        
+                displaystate.commit();
+        
+                // Schedule the next transmission
+                nextTimePoint += std::chrono::milliseconds(100);
+        
+                // Wait until the next scheduled time
+                std::this_thread::sleep_until(nextTimePoint);
+            }
+       }
+   }
 }
 
 int main(int argc, char* argv[]) {
