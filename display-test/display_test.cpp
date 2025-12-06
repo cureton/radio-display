@@ -79,13 +79,6 @@ void readData(int serialPort) {
                 bytesReadTotal += result;
             }
 
-//            // Print the frame in hexadecimal format
-//            std::cout << "Received Frame: ";
-//            for (size_t i = 0; i < FRAME_SIZE; ++i) {
-//                printf("%02X ", currFrame[i]);
-//            }
-//            std::cout << std::endl;
-//
             // Compare frames and invoke callback if registered
             for (size_t i = 0; i < FRAME_SIZE; ++i) {
                 if (currFrame[i] != prevFrame[i] && frameCallback) {
@@ -97,6 +90,8 @@ void readData(int serialPort) {
         }
     }
 }
+
+
 void registerFrameCallback(FrameCallback callback) {
     frameCallback = callback;
 }

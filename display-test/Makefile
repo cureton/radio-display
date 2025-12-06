@@ -6,8 +6,8 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 LIBS = -lconfig++ -lpthread
 
 # Project files
-TARGET = serial_example
-SRCS = serial_example.cpp ../display-state/DisplayState.cpp 
+TARGET = display_test
+SRCS = display_test.cpp ../display-state/DisplayState.cpp 
 OBJS = $(SRCS:.cpp=.o)
 
 # Default target
