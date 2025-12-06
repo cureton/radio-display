@@ -1,0 +1,2 @@
+display-test: communicate with display over serial link and cycle through display elements, also accepts key/knob input. 
+
