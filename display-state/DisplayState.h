@@ -1,6 +1,7 @@
 #ifndef DISPLAYSTATE_H
 #define DISPLAYSTATE_H
 
+#include <stdint.h> 
 #include <iostream>
 #include <unordered_map>
 #include <iomanip>
