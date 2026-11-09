@@ -6,8 +6,12 @@
 #include <unistd.h>
 #include <chrono>
 #include <libconfig.h++>
-#include <cstring>
 
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <array>
+#include <unistd.h>
 
 #include "../display-state/DisplayState.h"
 
@@ -53,44 +57,87 @@ void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
         std::this_thread::sleep_until(nextTimePoint);
     }
 }
+
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
     constexpr size_t FRAME_SIZE = 13;
 
-    std::vector<uint8_t> prevFrame(FRAME_SIZE, 0x00);
-    std::vector<uint8_t> currFrame(FRAME_SIZE, 0x00);
+    using Frame = std::array<uint8_t, FRAME_SIZE>;
+
+    Frame prevFrame{};
+    Frame currFrame{};
+
+    size_t bytesReadTotal = 0;
+    bool havePrevFrame = false;
 
     while (true) {
-	/* Read single bytes until we get sync with SOF byte */ 
-        size_t bytesRead = read(serialPort, currFrame.data(), 1);
+        uint8_t byte;
 
-        if (bytesRead <= 0) continue;
+        ssize_t result = read(serialPort, &byte, 1);
 
-        if (currFrame[0] == SYNC_BYTE) {
-            /* First byte is start of frame in start of current frame */
-            size_t bytesReadTotal = 1;
-
-            while (bytesReadTotal < FRAME_SIZE) {
-                size_t result = read(serialPort, currFrame.data() + bytesReadTotal, FRAME_SIZE - bytesReadTotal);
-                if (result <= 0) {
-                    perror("Error reading frame");
-                    break;
-                }
-                bytesReadTotal += result;
+        if (result < 0) {
+            if (errno == EINTR) {
+                // Interrupted by signal; retry.
+                continue;
             }
 
-            // Compare frames and invoke callback if registered
-            for (size_t i = 0; i < FRAME_SIZE; ++i) {
-                if (currFrame[i] != prevFrame[i] && frameCallback) {
-                    frameCallback(i, currFrame[i]);
-                }
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No data currently available.
+                // With non-blocking I/O, use poll() to avoid busy looping.
+                continue;
             }
 
-            prevFrame = currFrame;
+            // Unrecoverable read error.
+            std::cerr << "Serial read error: "
+                      << std::strerror(errno) << '\n';
+
+            return;
         }
+
+        if (result == 0) {
+            // No data returned.
+            // Depending on termios VMIN/VTIME, this may be a timeout.
+            continue;
+        }
+
+        // Waiting for start of frame.
+        if (bytesReadTotal == 0) {
+            if (byte != SYNC_BYTE)
+                continue;
+
+            currFrame[0] = byte;
+            bytesReadTotal = 1;
+            continue;
+        }
+
+        // Accumulate frame bytes.
+        currFrame[bytesReadTotal++] = byte;
+
+        // Wait until the complete frame has arrived.
+        if (bytesReadTotal < FRAME_SIZE)
+            continue;
+
+        // Complete frame received.
+        if (frameCallback) {
+            for (size_t i = 0; i < FRAME_SIZE; ++i) {
+                if (!havePrevFrame ||
+                    currFrame[i] != prevFrame[i]) {
+
+                    frameCallback(
+                        static_cast<int>(i),
+                        currFrame[i]
+                    );
+                }
+            }
+        }
+
+        prevFrame = currFrame;
+        havePrevFrame = true;
+
+        // Ready for the next frame.
+        bytesReadTotal = 0;
     }
 }
-
 
 void registerFrameCallback(FrameCallback callback) {
     frameCallback = callback;
