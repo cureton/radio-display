@@ -186,9 +186,9 @@ void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char characte
 	return; 
     }
 
-    // Retrieve the 14-segment bit pattern for the character
-    auto it = FOURTEEN_SEGMENT_FONT_MAP.find(character);
-    if (it == FOURTEEN_SEGMENT_FONT_MAP.end()) {
+    // Retrieve the 8-segment bit pattern for the character
+    auto it = EIGHT_SEGMENT_FONT_MAP.find(character);
+    if (it == EIGHT_SEGMENT_FONT_MAP.end()) {
         std::cerr << "Character not found in font map" << std::endl;
         return;
     }
