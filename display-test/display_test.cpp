@@ -195,7 +195,6 @@ void updateDisplay(DisplayState& displaystate) {
             if (( i % 8) ==7 ) i++; 
     
             std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << " count " << (uint32_t) i % ALL_DISPLAY_ELEMENTS_MAX <<  " of "  <<  ALL_DISPLAY_ELEMENTS_MAX << '\n';
-            DisplayBitMap bitindex = static_cast<DisplayBitMap>(i); 
     
             displaystate.setBacklightLevel(5);
             displaystate.setFrequencyDisplaySegment(0, (i/100) % 10   + '0');
