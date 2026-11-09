@@ -58,87 +58,86 @@ void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
     }
 }
 
+
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
     constexpr size_t FRAME_SIZE = 13;
+    constexpr size_t READ_BUFFER_SIZE = 4096;
 
     using Frame = std::array<uint8_t, FRAME_SIZE>;
 
     Frame prevFrame{};
     Frame currFrame{};
 
-    size_t bytesReadTotal = 0;
+    std::array<uint8_t, READ_BUFFER_SIZE> readBuffer{};
+
+    size_t framePos = 0;
     bool havePrevFrame = false;
 
     while (true) {
-        uint8_t byte;
+        ssize_t bytesRead = read(
+            serialPort,
+            readBuffer.data(),
+            readBuffer.size()
+        );
 
-        ssize_t result = read(serialPort, &byte, 1);
-
-        if (result < 0) {
-            if (errno == EINTR) {
-                // Interrupted by signal; retry.
+        if (bytesRead < 0) {
+            if (errno == EINTR)
                 continue;
-            }
 
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                // No data currently available.
-                // With non-blocking I/O, use poll() to avoid busy looping.
+                // Use poll() for non-blocking descriptors.
                 continue;
             }
 
-            // Unrecoverable read error.
-            std::cerr << "Serial read error: "
-                      << std::strerror(errno) << '\n';
-
+            perror("Serial read error");
             return;
         }
 
-        if (result == 0) {
-            // No data returned.
-            // Depending on termios VMIN/VTIME, this may be a timeout.
+        if (bytesRead == 0) {
+            // EOF on some transports, or a termios timeout.
+            // Configure VMIN=1, VTIME=0 for blocking serial reads.
             continue;
         }
 
-        // Waiting for start of frame.
-        if (bytesReadTotal == 0) {
-            if (byte != SYNC_BYTE)
+        // Process all received bytes.
+        for (ssize_t i = 0; i < bytesRead; ++i) {
+            uint8_t byte = readBuffer[i];
+
+            // Waiting for start of frame.
+            if (framePos == 0) {
+                if (byte != SYNC_BYTE)
+                    continue;
+
+                currFrame[framePos++] = byte;
+                continue;
+            }
+
+            // Append byte to current frame.
+            currFrame[framePos++] = byte;
+
+            if (framePos < FRAME_SIZE)
                 continue;
 
-            currFrame[0] = byte;
-            bytesReadTotal = 1;
-            continue;
-        }
-
-        // Accumulate frame bytes.
-        currFrame[bytesReadTotal++] = byte;
-
-        // Wait until the complete frame has arrived.
-        if (bytesReadTotal < FRAME_SIZE)
-            continue;
-
-        // Complete frame received.
-        if (frameCallback) {
-            for (size_t i = 0; i < FRAME_SIZE; ++i) {
-                if (!havePrevFrame ||
-                    currFrame[i] != prevFrame[i]) {
-
-                    frameCallback(
-                        static_cast<int>(i),
-                        currFrame[i]
-                    );
+            // Complete frame received.
+            if (frameCallback) {
+                for (size_t j = 0; j < FRAME_SIZE; ++j) {
+                    if (!havePrevFrame ||
+                        currFrame[j] != prevFrame[j]) {
+                        frameCallback(
+                            static_cast<int>(j),
+                            currFrame[j]
+                        );
+                    }
                 }
             }
+
+            prevFrame = currFrame;
+            havePrevFrame = true;
+            framePos = 0;
         }
-
-        prevFrame = currFrame;
-        havePrevFrame = true;
-
-        // Ready for the next frame.
-        bytesReadTotal = 0;
     }
 }
-
 void registerFrameCallback(FrameCallback callback) {
     frameCallback = callback;
 }

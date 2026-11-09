@@ -209,7 +209,7 @@ enum class DisplayBitMap : size_t {
     UNKNOWN_41_BIT6,
     //ZERO_41_BIT7,
 
-    UNUSED  /* Use to indicate the in segment mapping that bit is usused */
+    UNUSED = UINT16_MAX  /* Use to indicate the in segment mapping that bit is usused */
 };
 
 #define ALL_DISPLAY_ELEMENTS_MAX  (sizeof(ALL_DISPLAY_ELEMENTS) / sizeof(ALL_DISPLAY_ELEMENTS[0]))

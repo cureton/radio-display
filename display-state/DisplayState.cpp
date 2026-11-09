@@ -21,11 +21,19 @@ void DisplayState::clear() {
 
 // Set a specific bit
 void DisplayState::setBit(DisplayBitMap bit) {
+
+    if (bit == DisplayBitMap::UNUSED) 
+        return; 
+
     buffer_next[static_cast<size_t>(bit)] = true;
 }
 
 // Clear a specific bit
 void DisplayState::clearBit(DisplayBitMap bit) {
+
+    if (bit == DisplayBitMap::UNUSED) 
+        return; 
+
     buffer_next[static_cast<size_t>(bit)] = false;
 }
 
