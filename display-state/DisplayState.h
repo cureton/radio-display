@@ -1,12 +1,11 @@
 #ifndef DISPLAYSTATE_H
 #define DISPLAYSTATE_H
 
-#include <stdint.h> 
+#include <stdint.h>
+#include <array>
 #include <iostream>
-#include <unordered_map>
 #include <iomanip>
 #include <vector>
-#include <bitset>
 
 // Enum for display bit mapping
 // Enum to label each bit in a type-safe way
@@ -351,7 +350,6 @@ constexpr DisplayBitMap ALL_DISPLAY_ELEMENTS[] = {
     DisplayBitMap::BACKLIGHT_LEVEL_BIT_2,
 };
 
-
 #define S_AND_PO_LEVEL_MAX  (sizeof(S_AND_PO_LEVEL) / sizeof(S_AND_PO_LEVEL[0]))
 constexpr DisplayBitMap S_AND_PO_LEVEL[] = {
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_1,
@@ -359,12 +357,11 @@ constexpr DisplayBitMap S_AND_PO_LEVEL[] = {
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_3,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_4,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_5,
-    DisplayBitMap::ANNUNCIATOR_S_AND_PO_6, 
+    DisplayBitMap::ANNUNCIATOR_S_AND_PO_6,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_7,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_8,
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_9,
 };
-
 
 #define UNKNOWN_BITS_MAX  (sizeof(UNKNOWN_BITS) / sizeof(UNKNOWN_BITS[0]))
 constexpr DisplayBitMap UNKNOWN_BITS[] = {
@@ -387,7 +384,7 @@ constexpr DisplayBitMap UNKNOWN_BITS[] = {
     DisplayBitMap::UNKNOWN_41_BIT4,
     DisplayBitMap::UNKNOWN_41_BIT5,
     DisplayBitMap::UNKNOWN_41_BIT6,
-}; 
+};
 
 #define ANNUNCIATOR_BITS_MAX (sizeof(ANNUNCIATOR_BITS) / sizeof(ANNUNCIATOR_BITS[0]))
 constexpr DisplayBitMap ANNUNCIATOR_BITS[] = {
@@ -415,10 +412,7 @@ constexpr DisplayBitMap ANNUNCIATOR_BITS[] = {
     DisplayBitMap::ANNUNCIATOR_AM_MODE_SELECTED,
     DisplayBitMap::ANNUNCIATOR_SET_MODE_ACTIVE,
     DisplayBitMap::MEMORY_CHANNEL_SEPARATOR,
-     
-}; 
-
-
+};
 
 constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
     // Digit 1
@@ -437,7 +431,7 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_L,
         DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_N,
-	DisplayBitMap::UNUSED
+        DisplayBitMap::UNUSED
     },
 
     // Digit 2
@@ -454,9 +448,9 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_J,
         DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_K,
         DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_L,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_N,
-	DisplayBitMap::UNUSED
+        DisplayBitMap::UNUSED
     },
 
     // Digit 3
@@ -473,10 +467,9 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_J,
         DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_K,
         DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_L,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_N,
-	DisplayBitMap::UNUSED
-
+        DisplayBitMap::UNUSED
     },
 
     // Digit 4
@@ -493,9 +486,9 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_J,
         DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_K,
         DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_L,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_N,
-	DisplayBitMap::UNUSED
+        DisplayBitMap::UNUSED
     },
 
     // Digit 5
@@ -512,9 +505,9 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_J,
         DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_L,
         DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_K,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_N,
-	DisplayBitMap::UNUSED
+        DisplayBitMap::UNUSED
     },
 
     // Digit 6
@@ -531,9 +524,9 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
         DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_J,
         DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_L,
         DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_K,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::UNUSED,
         DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_N,
-	DisplayBitMap::UNUSED
+        DisplayBitMap::UNUSED
     }
 };
 
@@ -569,15 +562,13 @@ constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][7] = {
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_E,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_F,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_G,
-
     },
 };
 
 class DisplayState {
 public:
-    DisplayState();  // Constructor
+    DisplayState();
 
-    // Public methods
     void clear();
     void clearBit(DisplayBitMap bit);
     void clearUnknownBit(uint8_t index);
@@ -591,15 +582,14 @@ public:
     void setPowerLevelIndicators(uint8_t level);
     void setAnnunciators(uint8_t level);
     void setFrequencyDisplaySegment(uint8_t segmentIndex, char character);
-    void setMemoryChannelDisplaySegment(uint8_t segmentIndex , char character);
+    void setMemoryChannelDisplaySegment(uint8_t segmentIndex, char character);
 
 private:
-    // Data members
-    std::unordered_map<size_t, bool> buffer_current;
-    std::unordered_map<size_t, bool> buffer_next;
     static constexpr size_t BITFIELD_SIZE = 336;
-    std::bitset<336> DisplayState_current;
-    std::bitset<336> DisplayState_next;
+    static constexpr size_t BYTE_COUNT = (BITFIELD_SIZE + 7) / 8;
+
+    std::array<uint8_t, BYTE_COUNT> buffer_current{};
+    std::array<uint8_t, BYTE_COUNT> buffer_next{};
 };
 
 #endif  // DISPLAYSTATE_H
