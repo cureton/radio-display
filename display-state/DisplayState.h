@@ -537,11 +537,10 @@ constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
     }
 };
 
-constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][8] = {
+constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][7] = {
     // Digit 1
     {
-        //DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_A,
-	DisplayBitMap::UNUSED,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_A,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_B,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_C,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_D,
@@ -570,7 +569,6 @@ constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][8] = {
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_E,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_F,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_G,
-	DisplayBitMap::UNUSED
 
     },
 };
