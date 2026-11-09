@@ -1,2 +1,90 @@
-display-test: communicate with display over serial link and cycle through display elements, also accepts key/knob input. 
+# radio-display
 
+This project is a small C++ library and test harness for controlling and emulating the display used by a Yaesu FT-9700 radio head unit. The goal is to understand the head-unit display protocol, map the LCD segments and annunciators to a bitfield, and generate the serial byte stream needed to drive the display.
+
+The repository is organized around a display state model that describes the radio faceplate and a serial test app that can transmit that state over a serial link. It also includes artwork that shows the original display layout, which is useful for matching each bit to the correct segment or indicator on the LCD.
+
+## What this project does
+
+- Reverses the display mapping for a Yaesu FT-9700-style head unit
+- Represents the display as a structured bitfield rather than raw bytes
+- Converts that bitfield to the exact serial bytes required by the hardware
+- Allows the display to be exercised and debugged from a test harness
+- Uses reference artwork to cross-check segment placement and annunciator meanings
+
+## Repository layout
+
+- `display-state/`
+  - Core display model and bit mapping
+  - Segment definitions for frequency digits, memory digits, annunciators, and backlight indicators
+  - Serialization helpers for packet generation and parsing
+- `display-test/`
+  - Serial communication test utility
+  - Reads configuration from `config.cfg`
+  - Sends display updates over a serial port and can cycle through display elements for validation
+- `artwork/`
+  - Visual reference images for the display layout
+- `LICENSE`
+  - GPL v3.0 license
+
+## Display model
+
+The core of the project is in `display-state/DisplayState.h` and `display-state/DisplayState.cpp`.
+
+The code defines a large mapping table that associates each display segment and indicator with a bit position in the serialized frame. That includes:
+
+- frequency digits
+- memory channel digits
+- signal and power indicators
+- annunciators such as TX, RX, memory mode, AM mode, and power state
+- backlight control bits
+- a start-of-frame byte used in the protocol
+
+The display state is then serialized to a byte array that can be written directly to the serial interface.
+
+## Serial test harness
+
+The `display-test` program is a practical tool for validating the protocol against real hardware.
+
+It:
+
+- opens a serial port
+- configures the terminal for the display link
+- periodically writes the display byte buffer to the radio head unit
+- reads incoming frames when monitoring the bus
+- exercises display elements to verify segment activity and response
+
+The default configuration is in `display-test/config.cfg`:
+
+- serial port default: `/dev/ttyACM0`
+- baud rate: `19200`
+- data bits: `8`
+- parity: `none`
+- stop bits: `1`
+- send interval: `26 ms`
+
+## Building
+
+From the repository root:
+
+```bash
+cd display-state
+make
+
+cd ../display-test
+make
+```
+
+You can then run the serial tester after updating the port in `display-test/config.cfg`.
+
+## Project intent
+
+This project is meant to support hardware experimentation and protocol reverse engineering. The artwork acts as a visual reference so each segment and indicator can be mapped to the correct logical bit position in the display state. The result is a reusable display abstraction that can be used to generate the radio's head-unit output without having to reason about the raw serial bytes on every update.
+
+## Notes
+
+- This is a hardware-focused reverse-engineering and control project.
+- The display is driven by a highly structured byte payload, so understanding the mapping is essential.
+- The design is intentionally low-level to match the realities of serial protocol debugging and display emulation.
+
+This repository is a practical tool for exploring and controlling a Yaesu FT-9700 head-unit display using the artwork as the visual specification for the LCD layout.
