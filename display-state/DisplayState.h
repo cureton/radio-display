@@ -350,6 +350,13 @@ constexpr DisplayBitMap ALL_DISPLAY_ELEMENTS[] = {
     DisplayBitMap::BACKLIGHT_LEVEL_BIT_2,
 };
 
+#define BACKLIGHT_LEVEL_BITS_MAX (sizeof(BACKLIGHT_LEVEL_BITS) / sizeof(BACKLIGHT_LEVEL_BITS[0]))
+constexpr DisplayBitMap BACKLIGHT_LEVEL_BITS[] = {
+    DisplayBitMap::BACKLIGHT_LEVEL_BIT_0,
+    DisplayBitMap::BACKLIGHT_LEVEL_BIT_1,
+    DisplayBitMap::BACKLIGHT_LEVEL_BIT_2,
+};
+
 #define S_AND_PO_LEVEL_MAX  (sizeof(S_AND_PO_LEVEL) / sizeof(S_AND_PO_LEVEL[0]))
 constexpr DisplayBitMap S_AND_PO_LEVEL[] = {
     DisplayBitMap::ANNUNCIATOR_S_AND_PO_1,
@@ -415,152 +422,79 @@ constexpr DisplayBitMap ANNUNCIATOR_BITS[] = {
 };
 
 constexpr DisplayBitMap OPERATING_FREQUENCY_DIGITS[][15] = {
-    // Digit 1
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_K,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_L,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_K, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_L,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_1_SEG_N, DisplayBitMap::UNUSED
     },
-
-    // Digit 2
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_K,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_L,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_K, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_L,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_2_SEG_N, DisplayBitMap::UNUSED
     },
-
-    // Digit 3
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_K,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_L,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_K, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_L,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_3_SEG_N, DisplayBitMap::UNUSED
     },
-
-    // Digit 4
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_K,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_L,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_K, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_L,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_4_SEG_N, DisplayBitMap::UNUSED
     },
-
-    // Digit 5
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_L,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_K,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_L, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_K,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_5_SEG_N, DisplayBitMap::UNUSED
     },
-
-    // Digit 6
     {
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_A,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_B,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_C,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_D,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_E,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_F,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_G1,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_G2,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_H,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_J,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_L,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_K,
-        DisplayBitMap::UNUSED,
-        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_N,
-        DisplayBitMap::UNUSED
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_A, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_B,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_C, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_D,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_E, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_F,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_G1, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_G2,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_H, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_J,
+        DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_L, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_K,
+        DisplayBitMap::UNUSED, DisplayBitMap::OPERATING_FREQ_DIGIT_6_SEG_N, DisplayBitMap::UNUSED
     }
 };
 
 constexpr DisplayBitMap MEMORY_CHANNEL_DIGITS[][7] = {
-    // Digit 1
     {
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_A,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_B,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_C,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_D,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_E,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_A, DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_C, DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_E, DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_F,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_1_SEG_G,
     },
-
-    // Digit 2
     {
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_A,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_B,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_C,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_D,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_E,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_A, DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_C, DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_E, DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_F,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_2_SEG_G,
     },
-
-    // Digit 3
     {
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_A,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_B,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_C,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_D,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_E,
-        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_F,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_A, DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_B,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_C, DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_D,
+        DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_E, DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_F,
         DisplayBitMap::MEMORY_CHANNEL_DIGIT_3_SEG_G,
     },
 };

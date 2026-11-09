@@ -74,17 +74,11 @@ void DisplayState::deserialize(const std::vector<uint8_t>& byteArray) {
 }
 
 void DisplayState::setBacklightLevel(uint8_t level) {
-    const DisplayBitMap bits[] = {
-        DisplayBitMap::BACKLIGHT_LEVEL_BIT_0,
-        DisplayBitMap::BACKLIGHT_LEVEL_BIT_1,
-        DisplayBitMap::BACKLIGHT_LEVEL_BIT_2,
-    };
-
-    for (size_t i = 0; i < sizeof(bits) / sizeof(bits[0]); ++i) {
+    for (size_t i = 0; i < BACKLIGHT_LEVEL_BITS_MAX; ++i) {
         if (level & (1u << i)) {
-            setBit(bits[i]);
+            setBit(BACKLIGHT_LEVEL_BITS[i]);
         } else {
-            clearBit(bits[i]);
+            clearBit(BACKLIGHT_LEVEL_BITS[i]);
         }
     }
 }
