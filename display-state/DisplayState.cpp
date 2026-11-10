@@ -136,7 +136,7 @@ void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char characte
         return;
     }
 
-    uint16_t fontBits = 0;
+    uint8_t fontBits = 0;
     if (!lookupFont8(character, fontBits)) {
         std::cerr << "Character not found in font map" << std::endl;
         return;

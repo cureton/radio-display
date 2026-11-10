@@ -4,13 +4,13 @@
 #include <array>
 #include <cstdint>
 
-struct FontEntry {
+struct FontEntry14 {
     char character;
     uint16_t segments;
 };
 
 // 14-segment font map with updated segment configuration
-inline constexpr std::array<FontEntry, 53> FOURTEEN_SEGMENT_FONT_MAP = {{
+inline constexpr std::array<FontEntry14, 53> FOURTEEN_SEGMENT_FONT_MAP = {{
     // Digits
     {'0', 0b0000000000111111},  // 0
     {'1', 0b0000000000000110},  // 1
@@ -74,8 +74,15 @@ inline constexpr std::array<FontEntry, 53> FOURTEEN_SEGMENT_FONT_MAP = {{
 
 }};
 
-// 8-segment font map with updated segment configuration
-inline constexpr std::array<FontEntry, 19> EIGHT_SEGMENT_FONT_MAP = {{
+
+struct FontEntry8 {
+    char character;
+    uint16_t segments;
+};
+
+
+// 7-segment font map with updated segment configuration
+inline constexpr std::array<FontEntry8, 19> EIGHT_SEGMENT_FONT_MAP = {{
     // Digits
     {'0', 0b00111111},  // 0
     {'1', 0b00000110},  // 1
@@ -113,7 +120,7 @@ constexpr bool lookupFont14(char character, uint16_t& pattern) {
     return false;
 }
 
-constexpr bool lookupFont8(char character, uint16_t& pattern) {
+constexpr bool lookupFont8(char character, uint8_t& pattern) {
     for (const auto& entry : EIGHT_SEGMENT_FONT_MAP) {
         if (entry.character == character) {
             pattern = entry.segments;
