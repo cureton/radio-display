@@ -1,9 +1,16 @@
+#ifndef FONTMAP_H
+#define FONTMAP_H
+
+#include <array>
 #include <cstdint>
-#include <map>
-#include <string>
+
+struct FontEntry {
+    char character;
+    uint16_t segments;
+};
 
 // 14-segment font map with updated segment configuration
-std::map<char, uint16_t> FOURTEEN_SEGMENT_FONT_MAP = {
+inline constexpr std::array<FontEntry, 53> FOURTEEN_SEGMENT_FONT_MAP = {{
     // Digits
     {'0', 0b0000000000111111},  // 0
     {'1', 0b0000000000000110},  // 1
@@ -65,10 +72,10 @@ std::map<char, uint16_t> FOURTEEN_SEGMENT_FONT_MAP = {
     {12, 0b0001000000000000},  // Segment M
     {13, 0b0010000000000000},  // Segment N
 
-};
+}};
 
 // 8-segment font map with updated segment configuration
-std::map<char, uint16_t> EIGHT_SEGMENT_FONT_MAP = {
+inline constexpr std::array<FontEntry, 19> EIGHT_SEGMENT_FONT_MAP = {{
     // Digits
     {'0', 0b00111111},  // 0
     {'1', 0b00000110},  // 1
@@ -94,5 +101,27 @@ std::map<char, uint16_t> EIGHT_SEGMENT_FONT_MAP = {
     {5,  0b00100000},  // Segment F
     {6,  0b01000000},  // Segment G
  
-};
+}};
+
+constexpr bool lookupFont14(char character, uint16_t& pattern) {
+    for (const auto& entry : FOURTEEN_SEGMENT_FONT_MAP) {
+        if (entry.character == character) {
+            pattern = entry.segments;
+            return true;
+        }
+    }
+    return false;
+}
+
+constexpr bool lookupFont8(char character, uint16_t& pattern) {
+    for (const auto& entry : EIGHT_SEGMENT_FONT_MAP) {
+        if (entry.character == character) {
+            pattern = entry.segments;
+            return true;
+        }
+    }
+    return false;
+}
+
+#endif // FONTMAP_H
 

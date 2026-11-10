@@ -94,13 +94,12 @@ void DisplayState::setFrequencyDisplaySegment(uint8_t segment, char character) {
         return;
     }
 
-    const auto it = FOURTEEN_SEGMENT_FONT_MAP.find(character);
-    if (it == FOURTEEN_SEGMENT_FONT_MAP.end()) {
+    uint16_t fontBits = 0;
+    if (!lookupFont14(character, fontBits)) {
         std::cerr << "Character not found in font map" << std::endl;
         return;
     }
 
-    const uint16_t fontBits = it->second;
     for (size_t i = 0; i < segmentElements; ++i) {
         if (fontBits & (1u << i)) {
             setBit(OPERATING_FREQUENCY_DIGITS[segment][i]);
@@ -137,13 +136,12 @@ void DisplayState::setMemoryChannelDisplaySegment(uint8_t segment, char characte
         return;
     }
 
-    const auto it = EIGHT_SEGMENT_FONT_MAP.find(character);
-    if (it == EIGHT_SEGMENT_FONT_MAP.end()) {
+    uint16_t fontBits = 0;
+    if (!lookupFont8(character, fontBits)) {
         std::cerr << "Character not found in font map" << std::endl;
         return;
     }
 
-    const uint16_t fontBits = it->second;
     for (size_t i = 0; i < segmentElements; ++i) {
         if (fontBits & (1u << i)) {
             setBit(MEMORY_CHANNEL_DIGITS[segment][i]);
