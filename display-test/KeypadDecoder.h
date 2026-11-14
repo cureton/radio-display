@@ -5,20 +5,43 @@
 #include <cstdint>
 #include <functional>
 
-SYNC_BYTE
-FREQUENCY_KNOB
-PTT_DAC
-BYTE3
-MIC_SW1_DAC
-MIC_SW2_DAC
-VOLUME_POT_DAC
-SQUELCH_POT_DAC
-DUPICATE_MIC_SW2_DAC
-BUTTON1_DAC
-BUTTON2_DAC
-BUTTON3_DAC
-SCREEN_BUTTONS
+enum class FrameOffset : uint8_t {
+    SYNC_BYTE = 0,
+    FREQUENCY_KNOB = 1,
+    PTT_DAC = 2,
+    BYTE3 = 3,
+    MIC_SW1_DAC = 4,
+    MIC_SW2_DAC = 5,
+    VOLUME_POT_DAC = 6,
+    SQUELCH_POT_DAC = 7,
+    DUPICATE_MIC_SW2_DAC = 8,
+    BUTTON1_DAC = 9,
+    BUTTON2_DAC = 10,
+    BUTTON3_DAC = 11,
+    SCREEN_BUTTONS = 12,
+};
 
+struct InputFrame {
+    uint8_t sync_byte;
+    uint8_t frequency_knob;
+    uint8_t ptt_dac;
+    uint8_t byte3;
+    uint8_t mic_sw1_dac;
+    uint8_t mic_sw2_dac;
+    uint8_t volume_pot_dac;
+    uint8_t squelch_pot_dac;
+    uint8_t duplicate_mic_sw2_dac;
+    uint8_t button1_dac;
+    uint8_t button2_dac;
+    uint8_t button3_dac;
+    uint8_t screen_buttons;
+};
+
+/* Assertions to catch alignment issues  */
+static_assert(sizeof(InputFrame) == 13);
+static_assert(offsetof(InputFrame, ptt_dac) == 2);
+static_assert(offsetof(InputFrame, screen_buttons) == 12);
+static_assert(std::is_trivially_copyable_v<InputFrame>);
 
 enum class Key {
     DISPLAY_BTN_1,   // Byte 12 direct encoding, value 1
