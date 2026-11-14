@@ -15,7 +15,7 @@
 #include <stdexcept>
 
 #include "../display-state/DisplayState.h"
-#include "../display-state/KeypadDecoder.h"
+#include "../display-test/KeypadDecoder.h"
 
 using FrameCallback = void (*)(int index, uint8_t value);
 FrameCallback frameCallback = nullptr;
