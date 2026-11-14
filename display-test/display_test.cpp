@@ -62,23 +62,20 @@ void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
     constexpr size_t FRAME_SIZE = 13;
-    constexpr size_t READ_BUFFER_SIZE = 4096;
 
     using Frame = std::array<uint8_t, FRAME_SIZE>;
 
     Frame prevFrame{};
     Frame currFrame{};
-
-    std::array<uint8_t, READ_BUFFER_SIZE> readBuffer{};
-
-    size_t framePos = 0;
+    size_t buffered = 0;
     bool havePrevFrame = false;
 
     while (true) {
+        // Accumulate bytes until there is enough data to search for a full frame.
         ssize_t bytesRead = read(
             serialPort,
-            readBuffer.data(),
-            readBuffer.size()
+            currFrame.data() + buffered,
+            FRAME_SIZE - buffered
         );
 
         if (bytesRead < 0) {
@@ -94,48 +91,44 @@ void readData(int serialPort) {
             return;
         }
 
-        if (bytesRead == 0) {
-            // EOF on some transports, or a termios timeout.
-            // Configure VMIN=1, VTIME=0 for blocking serial reads.
+        if (bytesRead == 0)
+            continue;
+
+        buffered += static_cast<size_t>(bytesRead);
+        if (buffered < FRAME_SIZE)
+            continue;
+
+        // Find the sync byte in the buffered data. If it is not at index zero,
+        // discard the preceding bytes and shift the candidate frame to the front.
+        size_t syncPos = 0;
+        while (syncPos < FRAME_SIZE && currFrame[syncPos] != SYNC_BYTE)
+            ++syncPos;
+
+        if (syncPos == FRAME_SIZE) {
+            // No possible frame start in this buffer; scan the next sequence.
+            buffered = 0;
             continue;
         }
 
-        // Process all received bytes.
-        for (ssize_t i = 0; i < bytesRead; ++i) {
-            uint8_t byte = readBuffer[i];
+        if (syncPos != 0) {
+            const size_t remaining = FRAME_SIZE - syncPos;
+            std::memmove(currFrame.data(), currFrame.data() + syncPos, remaining);
+            buffered = remaining;
+            continue;
+        }
 
-            // Waiting for start of frame.
-            if (framePos == 0) {
-                if (byte != SYNC_BYTE)
-                    continue;
-
-                currFrame[framePos++] = byte;
-                continue;
-            }
-
-            // Append byte to current frame.
-            currFrame[framePos++] = byte;
-
-            if (framePos < FRAME_SIZE)
-                continue;
-
-            // Complete frame received.
-            if (frameCallback) {
-                for (size_t j = 0; j < FRAME_SIZE; ++j) {
-                    if (!havePrevFrame ||
-                        currFrame[j] != prevFrame[j]) {
-                        frameCallback(
-                            static_cast<int>(j),
-                            currFrame[j]
-                        );
-                    }
+        // A complete synchronized frame is available at currFrame[0..12].
+        if (frameCallback) {
+            for (size_t j = 0; j < FRAME_SIZE; ++j) {
+                if (!havePrevFrame || currFrame[j] != prevFrame[j]) {
+                    frameCallback(static_cast<int>(j), currFrame[j]);
                 }
             }
-
-            prevFrame = currFrame;
-            havePrevFrame = true;
-            framePos = 0;
         }
+
+        prevFrame = currFrame;
+        havePrevFrame = true;
+        buffered = 0;
     }
 }
 void registerFrameCallback(FrameCallback callback) {
@@ -272,7 +265,7 @@ int main(int argc, char* argv[]) {
 
 
         if (tcsetattr(serialPort, TCSANOW, &tty) != 0) {
-            perror("Error setting terminal attributes");
+            perror("Error setting serial port attributes");
             close(serialPort);
             return 1;
         }
