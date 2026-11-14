@@ -5,6 +5,22 @@
 #include <cstdint>
 #include <functional>
 
+enum class FrameOffset : uint8_t {
+    SYNC_BYTE = 0,
+    FREQUENCY_KNOB = 1,
+    PTT_DAC = 2,
+    BYTE3 = 3,
+    MIC_SW1_DAC = 4,
+    MIC_SW2_DAC = 5,
+    VOLUME_POT_DAC = 6,
+    SQUELCH_POT_DAC = 7,
+    DUPICATE_MIC_SW2_DAC = 8,
+    BUTTON1_DAC = 9,
+    BUTTON2_DAC = 10,
+    BUTTON3_DAC = 11,
+    SCREEN_BUTTONS = 12,
+};
+
 enum class Key {
     DISPLAY_BTN_1,   // Byte 12 encoding, value 1
     DISPLAY_BTN_2,   // Byte 12 encoding, value 2
