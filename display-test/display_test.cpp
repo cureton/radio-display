@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "../display-state/DisplayState.h"
+#include "../display-state/KeypadDecoder.h"
 
 
 using FrameCallback = void (*)(int index, uint8_t value);
@@ -121,6 +122,9 @@ void readData(int serialPort) {
 
             // Complete frame received.
             if (frameCallback) {
+                if currFrame[j] != prevFrame[j]) {
+                }
+                    {
                 for (size_t j = 0; j < FRAME_SIZE; ++j) {
                     if (!havePrevFrame ||
                         currFrame[j] != prevFrame[j]) {
