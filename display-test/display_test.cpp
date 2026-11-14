@@ -8,17 +8,49 @@
 #include <libconfig.h++>
 
 #include <cstdint>
+#include <cstddef>
 #include <cstring>
-#include <iostream>
 #include <array>
-#include <unistd.h>
+#include <cerrno>
+#include <stdexcept>
 
 #include "../display-state/DisplayState.h"
 #include "../display-state/KeypadDecoder.h"
 
-
 using FrameCallback = void (*)(int index, uint8_t value);
 FrameCallback frameCallback = nullptr;
+
+// The received input frame layout, in wire order.
+struct InputFrame {
+    uint8_t syncByte;
+    uint8_t frequencyKnob;
+    uint8_t pttDac;
+    uint8_t byte3;
+    uint8_t micSw1Dac;
+    uint8_t micSw2Dac;
+    uint8_t volumePotDac;
+    uint8_t squelchPotDac;
+    uint8_t duplicateMicSw2Dac;
+    uint8_t button1Dac;
+    uint8_t button2Dac;
+    uint8_t button3Dac;
+    uint8_t screenButtons;
+};
+
+static_assert(sizeof(InputFrame) == 13, "InputFrame must match the 13-byte wire frame");
+static_assert(offsetof(InputFrame, syncByte) == 0);
+static_assert(offsetof(InputFrame, frequencyKnob) == 1);
+static_assert(offsetof(InputFrame, pttDac) == 2);
+static_assert(offsetof(InputFrame, byte3) == 3);
+static_assert(offsetof(InputFrame, micSw1Dac) == 4);
+static_assert(offsetof(InputFrame, micSw2Dac) == 5);
+static_assert(offsetof(InputFrame, volumePotDac) == 6);
+static_assert(offsetof(InputFrame, squelchPotDac) == 7);
+static_assert(offsetof(InputFrame, duplicateMicSw2Dac) == 8);
+static_assert(offsetof(InputFrame, button1Dac) == 9);
+static_assert(offsetof(InputFrame, button2Dac) == 10);
+static_assert(offsetof(InputFrame, button3Dac) == 11);
+static_assert(offsetof(InputFrame, screenButtons) == 12);
 
 struct SerialConfig {
     std::string port;
@@ -38,7 +70,6 @@ speed_t getBaudRate(int baud) {
     }
 }
 
-//void sendData(int serialPort, const std::vector<uint8_t>& data, int interval_ms) {
 void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
     auto nextTimePoint = std::chrono::steady_clock::now();
     std::vector<uint8_t> data;
@@ -59,23 +90,22 @@ void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
     }
 }
 
-
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
-    constexpr size_t FRAME_SIZE = 13;
+    constexpr size_t FRAME_SIZE = sizeof(InputFrame);
 
-    using Frame = std::array<uint8_t, FRAME_SIZE>;
-
-    Frame prevFrame{};
-    Frame currFrame{};
+    InputFrame prevFrame{};
+    InputFrame currFrame{};
+    // Read directly into the current frame's object representation. The
+    // static_asserts above guarantee that its byte layout matches the wire.
+    auto* currBytes = reinterpret_cast<unsigned char*>(&currFrame);
     size_t buffered = 0;
     bool havePrevFrame = false;
 
     while (true) {
-        // Accumulate bytes until there is enough data to search for a full frame.
         ssize_t bytesRead = read(
             serialPort,
-            currFrame.data() + buffered,
+            currBytes + buffered,
             FRAME_SIZE - buffered
         );
 
@@ -99,32 +129,47 @@ void readData(int serialPort) {
         if (buffered < FRAME_SIZE)
             continue;
 
-        // Find the sync byte in the buffered data. If it is not at index zero,
-        // discard the preceding bytes and shift the candidate frame to the front.
+        // Locate the sync byte in the received frame bytes. If it is not at
+        // the start, shift the candidate frame bytes to the front.
         size_t syncPos = 0;
-        while (syncPos < FRAME_SIZE && currFrame[syncPos] != SYNC_BYTE)
+        while (syncPos < FRAME_SIZE && currBytes[syncPos] != SYNC_BYTE)
             ++syncPos;
 
         if (syncPos == FRAME_SIZE) {
-            // No possible frame start in this buffer; scan the next sequence.
             buffered = 0;
             continue;
         }
 
         if (syncPos != 0) {
             const size_t remaining = FRAME_SIZE - syncPos;
-            std::memmove(currFrame.data(), currFrame.data() + syncPos, remaining);
+            std::memmove(currBytes, currBytes + syncPos, remaining);
             buffered = remaining;
             continue;
         }
 
-        // A complete synchronized frame is available at currFrame[0..12].
+        // Compare by field name, while keeping the existing callback's wire
+        // byte index for consumers that still use the generic callback.
         if (frameCallback) {
-            for (size_t j = 0; j < FRAME_SIZE; ++j) {
-                if (!havePrevFrame || currFrame[j] != prevFrame[j]) {
-                    frameCallback(static_cast<int>(j), currFrame[j]);
-                }
-            }
+#define REPORT_CHANGED_FIELD(field) \
+            do { \
+                if (!havePrevFrame || currFrame.field != prevFrame.field) { \
+                    frameCallback(static_cast<int>(offsetof(InputFrame, field)), currFrame.field); \
+                } \
+            } while (false)
+            REPORT_CHANGED_FIELD(syncByte);
+            REPORT_CHANGED_FIELD(frequencyKnob);
+            REPORT_CHANGED_FIELD(pttDac);
+            REPORT_CHANGED_FIELD(byte3);
+            REPORT_CHANGED_FIELD(micSw1Dac);
+            REPORT_CHANGED_FIELD(micSw2Dac);
+            REPORT_CHANGED_FIELD(volumePotDac);
+            REPORT_CHANGED_FIELD(squelchPotDac);
+            REPORT_CHANGED_FIELD(duplicateMicSw2Dac);
+            REPORT_CHANGED_FIELD(button1Dac);
+            REPORT_CHANGED_FIELD(button2Dac);
+            REPORT_CHANGED_FIELD(button3Dac);
+            REPORT_CHANGED_FIELD(screenButtons);
+#undef REPORT_CHANGED_FIELD
         }
 
         prevFrame = currFrame;
@@ -132,6 +177,7 @@ void readData(int serialPort) {
         buffered = 0;
     }
 }
+
 void registerFrameCallback(FrameCallback callback) {
     frameCallback = callback;
 }
@@ -157,70 +203,59 @@ SerialConfig loadConfig(const std::string& configFile) {
 void updateDisplay(DisplayState& displaystate) {
     auto nextTimePoint = std::chrono::steady_clock::now();
 
-
     displaystate.clear();
 
     /* Turn em on */
-    for (unsigned int i =0; i < ALL_DISPLAY_ELEMENTS_MAX; i++)
-    {
+    for (unsigned int i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) {
         displaystate.setBit(ALL_DISPLAY_ELEMENTS[i]);
     }
 
-   // Commit changes to the current buffer
-
+    // Commit changes to the current buffer
     displaystate.setBacklightLevel(5);
     displaystate.commit();
 
-
-    while (true) 
-    {
+    while (true) {
         displaystate.clear();
         displaystate.setBacklightLevel(5);
-	
-	/* Turn em all on */
-        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) 
-        {
+
+        /* Turn em all on */
+        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) {
             displaystate.setBit(ALL_DISPLAY_ELEMENTS[i]);
         }
 
-        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) 
-        {
-            /* Skip high bit of serial bite */	
-            if (( i % 8) ==7 ) i++; 
-    
-            std::cout << "testing byte:  " << i / 8  << "bit " << i % 8  << " count " << (uint32_t) i % ALL_DISPLAY_ELEMENTS_MAX <<  " of "  <<  ALL_DISPLAY_ELEMENTS_MAX << '\n';
-    
-            displaystate.setBacklightLevel(5);
-            displaystate.setFrequencyDisplaySegment(0, (i/100) % 10   + '0');
-            displaystate.setFrequencyDisplaySegment(1, (i/10)  % 10   + '0');
-            displaystate.setFrequencyDisplaySegment(2, i       % 10   + '0');
-    
-	    //displaystate.setMemoryChannelDisplaySegment(0, (i/100) % 10   + '0');
-            //displaystate.setMemoryChannelDisplaySegment(1, (i/10)  % 10   + '0');
-            //displaystate.setMemoryChannelDisplaySegment(2, i       % 10   + '0');
-    
+        for (uint32_t i = 0; i < ALL_DISPLAY_ELEMENTS_MAX; i++) {
+            /* Skip high bit of serial byte */
+            if ((i % 8) == 7) i++;
 
-            /* Two flashed per element (5 toggles) */
-            for (uint8_t repeat=0; repeat < 6; repeat++) {
-    
-                if (repeat % 2)  {
+            std::cout << "testing byte:  " << i / 8 << "bit " << i % 8
+                      << " count " << static_cast<uint32_t>(i % ALL_DISPLAY_ELEMENTS_MAX)
+                      << " of " << ALL_DISPLAY_ELEMENTS_MAX << '\n';
+
+            displaystate.setBacklightLevel(5);
+            displaystate.setFrequencyDisplaySegment(0, (i / 100) % 10 + '0');
+            displaystate.setFrequencyDisplaySegment(1, (i / 10) % 10 + '0');
+            displaystate.setFrequencyDisplaySegment(2, i % 10 + '0');
+
+            // displaystate.setMemoryChannelDisplaySegment(0, (i/100) % 10 + '0');
+            // displaystate.setMemoryChannelDisplaySegment(1, (i/10) % 10 + '0');
+            // displaystate.setMemoryChannelDisplaySegment(2, (i%10) + '0');
+
+            /* Two flashes per element (5 toggles) */
+            for (uint8_t repeat = 0; repeat < 6; repeat++) {
+                if (repeat % 2) {
                     displaystate.setBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
                     displaystate.setBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
-                }  else {
+                } else {
                     displaystate.clearBit(DisplayBitMap::ANNUNCIATOR_INTERNET_CONNECTOR_FEATURE_ACTIVE);
                     displaystate.clearBit(ALL_DISPLAY_ELEMENTS[i % ALL_DISPLAY_ELEMENTS_MAX]);
                 }
-        
+
                 displaystate.commit();
-        
-                // Schedule the next transmission
                 nextTimePoint += std::chrono::milliseconds(100);
-        
-                // Wait until the next scheduled time
                 std::this_thread::sleep_until(nextTimePoint);
             }
-       }
-   }
+        }
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -235,7 +270,7 @@ int main(int argc, char* argv[]) {
             perror("Error opening serial port");
             return 1;
         }
-//
+
         struct termios tty{};
         if (tcgetattr(serialPort, &tty) != 0) {
             perror("Error getting terminal attributes");
@@ -243,27 +278,26 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-          cfsetospeed(&tty, B19200);
-          cfsetispeed(&tty, B19200); 
+        cfsetospeed(&tty, B19200);
+        cfsetispeed(&tty, B19200);
 
-         // Control flags
-         tty.c_cflag &= ~CSIZE;
-         tty.c_cflag |= CS8;                // 8-bit chars
-         tty.c_cflag |= (CLOCAL | CREAD) ;  // Local connections, enable RX
-         tty.c_cflag &= ~(PARENB | PARODD); // no parity
-         tty.c_cflag &= ~CSTOPB;            // 1 stop bit
-         tty.c_cflag &= ~CRTSCTS;            // No hardare flow control 
+        // Control flags
+        tty.c_cflag &= ~CSIZE;
+        tty.c_cflag |= CS8;                 // 8-bit chars
+        tty.c_cflag |= (CLOCAL | CREAD);    // Local connections, enable RX
+        tty.c_cflag &= ~(PARENB | PARODD);  // no parity
+        tty.c_cflag &= ~CSTOPB;             // 1 stop bit
+        tty.c_cflag &= ~CRTSCTS;            // No hardware flow control
 
-         // Input flags
-         tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK |
-                     ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+        // Input flags
+        tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK |
+                         ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 
-         // Output flags
-         tty.c_oflag &= ~OPOST;              // raw output
+        // Output flags
+        tty.c_oflag &= ~OPOST;  // raw output
 
-         // Local flags
-         tty.c_lflag &= ~(ICANON| ECHO | ECHOE| ISIG);
-
+        // Local flags
+        tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 
         if (tcsetattr(serialPort, TCSANOW, &tty) != 0) {
             perror("Error setting serial port attributes");
@@ -272,14 +306,13 @@ int main(int argc, char* argv[]) {
         }
 
         registerFrameCallback([](int index, uint8_t value) {
-            std::cout << "Byte changed at index " << index 
+            std::cout << "Byte changed at index " << index
                       << ": new value = 0x" << std::hex << +value << std::dec << '\n';
         });
 
         std::thread sender(sendData, serialPort, std::ref(displaystate), cfg.send_interval_ms);
         std::thread reader(readData, serialPort);
         std::thread update(updateDisplay, std::ref(displaystate));
-
 
         sender.join();
         reader.join();
