@@ -5,16 +5,31 @@
 #include <cstdint>
 #include <functional>
 
+SYNC_BYTE
+FREQUENCY_KNOB
+PTT_DAC
+BYTE3
+MIC_SW1_DAC
+MIC_SW2_DAC
+VOLUME_POT_DAC
+SQUELCH_POT_DAC
+DUPICATE_MIC_SW2_DAC
+BUTTON1_DAC
+BUTTON2_DAC
+BUTTON3_DAC
+SCREEN_BUTTONS
+
+
 enum class Key {
-    DISPLAY_BTN_1,   // Byte 12 encoding, value 1
-    DISPLAY_BTN_2,   // Byte 12 encoding, value 2
-    DISPLAY_BTN_3,   // Byte 12 encoding, value 3
-    DISPLAY_BTN_SEL, // Byte 12 encoding, value 3
-    DISPLAY_BTN_4,   // Byte 12 encoding, value 5
+    DISPLAY_BTN_1,   // Byte 12 direct encoding, value 1
+    DISPLAY_BTN_2,   // Byte 12 direct encoding, value 2
+    DISPLAY_BTN_3,   // Byte 12 direct encoding, value 3
+    DISPLAY_BTN_SEL, // Byte 12 direct encoding, value 3
+    DISPLAY_BTN_4,   // Byte 12 direct encoding, value 5
     DISPLAY_BTN_5,   // Byte 12 direct encoding, value 6
-    DISPLAY_BTN_MHZ_PRI,     // Byte 11 direct encoding
-    DISPLAY_BTN_TONE_HM_RV,  // Byte 11 direct encoding
-    DISPLAY_BTN_LOW_ACC,     // Byte 11 direct encoding
+    DISPLAY_BTN_MHZ_PRI,     // Byte 11 voltage encoding bit 2
+    DISPLAY_BTN_TONE_HM_RV,  // Byte 11 voltage encoding bit 3
+    DISPLAY_BTN_LOW_ACC,     // Byte 11 voltage encoding bit 1 
     DISPLAY_BTN_BAND_SET,    // Byte 10 voltage encoding
     DISPLAY_BTN_VM_MW,       // Byte 10 voltage encoding
     DISPLAY_BTN_SCAN_SEL,    // Byte 9 voltage encoding
