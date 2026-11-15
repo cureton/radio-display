@@ -17,41 +17,6 @@
 #include "../display-state/DisplayState.h"
 #include "../display-test/KeypadDecoder.h"
 
-using FrameCallback = void (*)(int index, uint8_t value);
-FrameCallback frameCallback = nullptr;
-
-// The received input frame layout, in wire order.
-struct InputFrame {
-    uint8_t syncByte;
-    uint8_t frequencyKnob;
-    uint8_t pttDac;
-    uint8_t byte3;
-    uint8_t micSw1Dac;
-    uint8_t micSw2Dac;
-    uint8_t volumePotDac;
-    uint8_t squelchPotDac;
-    uint8_t duplicateMicSw2Dac;
-    uint8_t button1Dac;
-    uint8_t button2Dac;
-    uint8_t button3Dac;
-    uint8_t screenButtons;
-};
-
-static_assert(sizeof(InputFrame) == 13, "InputFrame must match the 13-byte wire frame");
-static_assert(offsetof(InputFrame, syncByte) == 0);
-static_assert(offsetof(InputFrame, frequencyKnob) == 1);
-static_assert(offsetof(InputFrame, pttDac) == 2);
-static_assert(offsetof(InputFrame, byte3) == 3);
-static_assert(offsetof(InputFrame, micSw1Dac) == 4);
-static_assert(offsetof(InputFrame, micSw2Dac) == 5);
-static_assert(offsetof(InputFrame, volumePotDac) == 6);
-static_assert(offsetof(InputFrame, squelchPotDac) == 7);
-static_assert(offsetof(InputFrame, duplicateMicSw2Dac) == 8);
-static_assert(offsetof(InputFrame, button1Dac) == 9);
-static_assert(offsetof(InputFrame, button2Dac) == 10);
-static_assert(offsetof(InputFrame, button3Dac) == 11);
-static_assert(offsetof(InputFrame, screenButtons) == 12);
-
 struct SerialConfig {
     std::string port;
     int baud_rate;
@@ -147,30 +112,43 @@ void readData(int serialPort) {
             continue;
         }
 
-        // Compare by field name, while keeping the existing callback's wire
-        // byte index for consumers that still use the generic callback.
-        if (frameCallback) {
-#define REPORT_CHANGED_FIELD(field) \
-            do { \
-                if (!havePrevFrame || currFrame.field != prevFrame.field) { \
-                    frameCallback(static_cast<int>(offsetof(InputFrame, field)), currFrame.field); \
-                } \
-            } while (false)
-            REPORT_CHANGED_FIELD(syncByte);
-            REPORT_CHANGED_FIELD(frequencyKnob);
-            REPORT_CHANGED_FIELD(pttDac);
-            REPORT_CHANGED_FIELD(byte3);
-            REPORT_CHANGED_FIELD(micSw1Dac);
-            REPORT_CHANGED_FIELD(micSw2Dac);
-            REPORT_CHANGED_FIELD(volumePotDac);
-            REPORT_CHANGED_FIELD(squelchPotDac);
-            REPORT_CHANGED_FIELD(duplicateMicSw2Dac);
-            REPORT_CHANGED_FIELD(button1Dac);
-            REPORT_CHANGED_FIELD(button2Dac);
-            REPORT_CHANGED_FIELD(button3Dac);
-            REPORT_CHANGED_FIELD(screenButtons);
-#undef REPORT_CHANGED_FIELD
+        if (!havePrevFrame || currFrame.frequency_knob != prevFrame.frequency_knob) { 
+            std::cout << "Freqncy Knob Change " << currFrame.frequency_knob << '\n' ;
         }
+
+        if (!havePrevFrame || currFrame.ptt_dac != prevFrame.ptt_dac) { 
+            std::cout << "PTT DAC line change " << currFrame.ptt_dac << '\n' ;
+        }
+
+        if (!havePrevFrame || currFrame.volume_pot_dac != prevFrame.volume_pot_dac) { 
+            std::cout << "Volume pot DAC hange " << currFrame.volume_pot_dac << '\n' ;
+        }
+
+        if (!havePrevFrame || currFrame.squelch_pot_dac != prevFrame.squelch_pot_dac) { 
+            std::cout << "Squelch pot DAC hange " << currFrame.squelch_pot_dac << '\n' ;
+        }
+
+
+        if (!havePrevFrame ||
+             currFrame.mic_sw1_dac != prevFrame.mic_sw1_dac || 
+             currFrame.mic_sw2_dac != prevFrame.mic_sw2_dac 
+           ) {
+            std::cout << "MIC Keypad DAC lines change Row:" << currFrame.mic_sw1_dac << " Column: " << currFrame.mic_sw2_dac << '\n' ;
+        }
+
+        if (!havePrevFrame || currFrame.button1_dac != prevFrame.button1_dac) { 
+            std::cout << "Button 2 DAC hange " << currFrame.button1_dac << '\n' ;
+        }
+
+        if (!havePrevFrame || currFrame.button2_dac != prevFrame.button2_dac) { 
+            std::cout << "Button 2 DAC hange " << currFrame.button2_dac << '\n' ;
+        }
+
+        if (!havePrevFrame || currFrame.screen_buttons != prevFrame.screen_buttons) { 
+            std::cout << "Screen buttons byte change " << currFrame.screen_buttons << '\n' ;
+        }
+
+
 
         prevFrame = currFrame;
         havePrevFrame = true;
@@ -178,9 +156,6 @@ void readData(int serialPort) {
     }
 }
 
-void registerFrameCallback(FrameCallback callback) {
-    frameCallback = callback;
-}
 
 SerialConfig loadConfig(const std::string& configFile) {
     libconfig::Config cfg;
@@ -305,10 +280,6 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        registerFrameCallback([](int index, uint8_t value) {
-            std::cout << "Byte changed at index " << index
-                      << ": new value = 0x" << std::hex << +value << std::dec << '\n';
-        });
 
         std::thread sender(sendData, serialPort, std::ref(displaystate), cfg.send_interval_ms);
         std::thread reader(readData, serialPort);
