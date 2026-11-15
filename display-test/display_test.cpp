@@ -137,12 +137,17 @@ void readData(int serialPort) {
         }
 
         if (!havePrevFrame || currFrame.button1_dac != prevFrame.button1_dac) { 
-            std::cout << "Button 2 DAC hange " << std::hex << +currFrame.button1_dac << '\n' ;
+            std::cout << "Button 1 DAC hange " << std::hex << +currFrame.button1_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.button2_dac != prevFrame.button2_dac) { 
             std::cout << "Button 2 DAC hange " << std::hex << +currFrame.button2_dac << '\n' ;
         }
+
+        if (!havePrevFrame || currFrame.button3_dac != prevFrame.button3_dac) { 
+            std::cout << "Button 3 DAC hange " << std::hex << +currFrame.button3_dac << '\n' ;
+        }
+
 
         if (!havePrevFrame || currFrame.screen_buttons != prevFrame.screen_buttons) { 
             std::cout << "Screen buttons byte change " << std::hex << +currFrame.screen_buttons << '\n' ;
