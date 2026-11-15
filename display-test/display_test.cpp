@@ -113,19 +113,19 @@ void readData(int serialPort) {
         }
 
         if (!havePrevFrame || currFrame.frequency_knob != prevFrame.frequency_knob) { 
-            std::cout << "Freqncy Knob Change " << currFrame.frequency_knob << '\n' ;
+            std::cout << "Freqncy Knob Change " << std::hex << +currFrame.frequency_knob << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.ptt_dac != prevFrame.ptt_dac) { 
-            std::cout << "PTT DAC line change " << currFrame.ptt_dac << '\n' ;
+            std::cout << "PTT DAC line change " << std::hex << +currFrame.ptt_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.volume_pot_dac != prevFrame.volume_pot_dac) { 
-            std::cout << "Volume pot DAC hange " << currFrame.volume_pot_dac << '\n' ;
+            std::cout << "Volume pot DAC hange " << std::hex << +currFrame.volume_pot_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.squelch_pot_dac != prevFrame.squelch_pot_dac) { 
-            std::cout << "Squelch pot DAC hange " << currFrame.squelch_pot_dac << '\n' ;
+            std::cout << "Squelch pot DAC hange " << std::hex << +currFrame.squelch_pot_dac << '\n' ;
         }
 
 
@@ -133,19 +133,19 @@ void readData(int serialPort) {
              currFrame.mic_sw1_dac != prevFrame.mic_sw1_dac || 
              currFrame.mic_sw2_dac != prevFrame.mic_sw2_dac 
            ) {
-            std::cout << "MIC Keypad DAC lines change Row:" << currFrame.mic_sw1_dac << " Column: " << currFrame.mic_sw2_dac << '\n' ;
+            std::cout << "MIC Keypad DAC lines change Row:" << std::hex << +currFrame.mic_sw1_dac << " Column: " << std::hex << +currFrame.mic_sw2_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.button1_dac != prevFrame.button1_dac) { 
-            std::cout << "Button 2 DAC hange " << currFrame.button1_dac << '\n' ;
+            std::cout << "Button 2 DAC hange " << std::hex << +currFrame.button1_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.button2_dac != prevFrame.button2_dac) { 
-            std::cout << "Button 2 DAC hange " << currFrame.button2_dac << '\n' ;
+            std::cout << "Button 2 DAC hange " << std::hex << +currFrame.button2_dac << '\n' ;
         }
 
         if (!havePrevFrame || currFrame.screen_buttons != prevFrame.screen_buttons) { 
-            std::cout << "Screen buttons byte change " << currFrame.screen_buttons << '\n' ;
+            std::cout << "Screen buttons byte change " << std::hex << +currFrame.screen_buttons << '\n' ;
         }
 
 
