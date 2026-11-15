@@ -24,7 +24,7 @@ enum class FrameOffset : uint8_t {
 struct InputFrame {
     uint8_t sync_byte;
     uint8_t frequency_knob;
-    uint8_t ptt_dac;
+    uint8_t mic_ptt_dac;
     uint8_t byte3;
     uint8_t mic_sw1_dac;
     uint8_t mic_sw2_dac;
@@ -39,7 +39,7 @@ struct InputFrame {
 
 /* Assertions to catch alignment issues  */
 static_assert(sizeof(InputFrame) == 13);
-static_assert(offsetof(InputFrame, ptt_dac) == 2);
+static_assert(offsetof(InputFrame, mic_ptt_dac) == 2);
 static_assert(offsetof(InputFrame, screen_buttons) == 12);
 static_assert(std::is_trivially_copyable_v<InputFrame>);
 

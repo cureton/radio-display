@@ -55,6 +55,16 @@ void sendData(int serialPort, DisplayState& displaystate, int interval_ms) {
     }
 }
 
+
+void HM48_decoder(uint8_t ptt_dac, uint8_t sw1_dac, uint8_t sw2_dac) 
+{
+    std::cout << "MIC PTT and/ork Keypad DAC lines change:" \
+              << "\n    PTT: " << std::hex << +ptt_dac \
+              << "\n Column: " << std::hex << +sw1_dac \
+              << "\n    Row: " << std::hex << +sw2_dac << '\n' ;
+   return;
+}
+
 void readData(int serialPort) {
     constexpr uint8_t SYNC_BYTE = 0x80;
     constexpr size_t FRAME_SIZE = sizeof(InputFrame);
@@ -116,10 +126,6 @@ void readData(int serialPort) {
             std::cout << "Freqncy Knob Change " << std::hex << +currFrame.frequency_knob << '\n' ;
         }
 
-        if (!havePrevFrame || currFrame.ptt_dac != prevFrame.ptt_dac) { 
-            std::cout << "PTT DAC line change " << std::hex << +currFrame.ptt_dac << '\n' ;
-        }
-
         if (!havePrevFrame || currFrame.volume_pot_dac != prevFrame.volume_pot_dac) { 
             std::cout << "Volume pot DAC hange " << std::hex << +currFrame.volume_pot_dac << '\n' ;
         }
@@ -129,12 +135,13 @@ void readData(int serialPort) {
         }
 
 
-        if (!havePrevFrame ||
-             currFrame.mic_sw1_dac != prevFrame.mic_sw1_dac || 
-             currFrame.mic_sw2_dac != prevFrame.mic_sw2_dac 
-           ) {
-            std::cout << "MIC Keypad DAC lines change Row:" << std::hex << +currFrame.mic_sw1_dac << " Column: " << std::hex << +currFrame.mic_sw2_dac << '\n' ;
-        }
+        if (!havePrevFrame || 
+            currFrame.mic_ptt_dac != prevFrame.mic_ptt_dac || 
+            currFrame.mic_sw1_dac != prevFrame.mic_sw1_dac || 
+            currFrame.mic_sw2_dac != prevFrame.mic_sw2_dac ) 
+        {
+           HM48_decoder(currFrame.mic_ptt_dac, currFrame.mic_sw1_dac, currFrame.mic_sw2_dac);
+        } 
 
         if (!havePrevFrame || currFrame.button1_dac != prevFrame.button1_dac) { 
             std::cout << "Button 1 DAC hange " << std::hex << +currFrame.button1_dac << '\n' ;
@@ -148,19 +155,15 @@ void readData(int serialPort) {
             std::cout << "Button 3 DAC hange " << std::hex << +currFrame.button3_dac << '\n' ;
         }
 
-
         if (!havePrevFrame || currFrame.screen_buttons != prevFrame.screen_buttons) { 
             std::cout << "Screen buttons byte change " << std::hex << +currFrame.screen_buttons << '\n' ;
         }
-
-
 
         prevFrame = currFrame;
         havePrevFrame = true;
         buffered = 0;
     }
 }
-
 
 SerialConfig loadConfig(const std::string& configFile) {
     libconfig::Config cfg;
